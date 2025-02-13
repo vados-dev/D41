@@ -1,5 +1,5 @@
 
-name: PBRP Builder New
+name: PBRP Builder New (BAD)
 
 on:
   workflow_dispatch:
