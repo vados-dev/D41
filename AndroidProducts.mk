@@ -6,4 +6,7 @@
 #
 
 PRODUCT_MAKEFILES := \
-    $(LOCAL_DIR)/omni_sl8541e_cus_go.mk
+    $(LOCAL_DIR)/omni_D41.mk
+
+COMMON_LUNCH_CHOICES := \
+    D41-eng

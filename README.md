@@ -1,4 +1,4 @@
-# Android device tree for FX D41 (sl8541e_cus_go)
+# Android device tree for FX D41 (sp9832e_1h10_go)
 
 ```
 #
