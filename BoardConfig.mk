@@ -122,6 +122,8 @@ PLATFORM_SECURITY_PATCH := 2025-12-05
 # Recovery
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
+# Use mke2fs to create ext4 images
+TARGET_USES_MKE2FS := true
 #TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/etc/recovery.fstab
 #TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/recovery.fstab
 #TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
