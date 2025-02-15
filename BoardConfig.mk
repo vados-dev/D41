@@ -9,6 +9,7 @@ DEVICE_PATH := device/sprd/D41
 
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
+export LC_ALL=C
 #BUILD_BROKEN_DUP_RULES := true
 #BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 
@@ -39,8 +40,8 @@ TARGET_BOOTLOADER_BOARD_NAME := sl8541e_cus_32b
 
 # Kernel
 BOARD_KERNEL_BASE := 0x00000000
-BOARD_KERNEL_CMDLINE :=  console=ttyS1,115200n8 androidboot.configfs=true lcd_id=ID770703 lcd_base=99aee000 lcd_size=1280x320
-#BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE :=  console=ttyS1,115200n8 lcd_id=ID770703 lcd_base=99aee000 lcd_size=1280x320
+BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_RAMDISK_OFFSET := 0x05400000
 BOARD_KERNEL_TAGS_OFFSET := 0x00000100
@@ -85,7 +86,7 @@ TARGET_COPY_OUT_VENDOR := vendor
 
 # Platform
 TARGET_BOARD_PLATFORM := sp9832e
-TARGET_BOARD_PLATFORM_GPU := mali-t820
+TARGET_BOARD_PLATFORM_GPU := midgard
 
 # MTP
 TW_HAS_MTP := true
@@ -108,7 +109,7 @@ BOARD_AVB_KEY_PATH := external/avb/test/data/testkey_rsa4096.pem
 BOARD_AVB_RECOVERY_KEY_PATH := $(BOARD_AVB_KEY_PATH)
 BOARD_AVB_ALGORITHM := SHA256_RSA4096
 BOARD_AVB_RECOVERY_ALGORITHM := $(BOARD_AVB_ALGORITHM)
-BOARD_AVB_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
+BOARD_AVB_ROLLBACK_INDEX := 1 #$(PLATFORM_SECURITY_PATCH_TIMESTAMP)
 BOARD_AVB_RECOVERY_ROLLBACK_INDEX := $(BOARD_AVB_ROLLBACK_INDEX)
 BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 2
 
@@ -120,10 +121,11 @@ PLATFORM_SECURITY_PATCH := 2018-09-05
 
 # Crypto
 TW_INCLUDE_CRYPTO := true
-TW_CRYPTO_USE_SYSTEM_VOLD := hwservicemanager servicemanager
+TW_CRYPTO_USE_SYSTEM_VOLD := uncrypt keymaster-3-0-service
+#hwservicemanager servicemanager vold gatekeeperd
 # qseecomd keymaster-3-0-qti
-TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
-#TW_CRYPTO_USE_SYSTEM_VOLD := true
+TW_CRYPTO_SYSTEM_VOLD_MOUNT := system vendor prodnv misc miscdata
+TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
 #TW_INCLUDE_CRYPTO_FBE := true
 #TW_INCLUDE_FBE_METADATA_DECRYPT := true
 #BOARD_USES_METADATA_PARTITION := true
@@ -131,7 +133,7 @@ TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
 # Encryption by Depesh
 #TARGET_HW_DISK_ENCRYPTION := true
 #TARGET_CRYPTFS_HW_PATH := vendor/qcom/opensource/cryptfs_hw
-TW_CRYPTO_FS_TYPE := "f2fs"
+#TW_CRYPTO_FS_TYPE := "f2fs"
 #TW_CRYPTO_REAL_BLKDEV := "/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata"
 #TW_CRYPTO_MNT_POINT := "/data"
 #TW_CRYPTO_FS_OPTIONS := "noatime,nosuid,nodev,discard,inline_xattr,inline_data=ordered"
@@ -140,7 +142,7 @@ TW_CRYPTO_FS_TYPE := "f2fs"
 # Recovery
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
-BOARD_HAS_NO_REAL_SDCARD := true
+#BOARD_HAS_NO_REAL_SDCARD := true
 RECOVERY_SDCARD_ON_DATA := true
 # Use mke2fs to create ext4 images
 TARGET_USES_MKE2FS := true
@@ -150,9 +152,6 @@ TARGET_USES_MKE2FS := true
 # system.prop
 TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
 #RECOVERY_VARIANT := twrp
-
-# See here : https://github.com/omnirom/android_b...ndroid.mk#L435
-#TARGET_RECOVERY_DEVICE_MODULES := true
 
 # Display
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
@@ -168,8 +167,8 @@ RECOVERY_TOUCHSCREEN_SWAP_XY:= true
 RECOVERY_TOUCHSCREEN_FLIP_X:= true
 
 # Resolution
-DEVICE_SCREEN_WIDTH := 1280
-DEVICE_SCREEN_HEIGHT := 320
+TARGET_SCREEN_WIDTH := 1080
+TARGET_SCREEN_HEIGHT := 2000
 
 # TWRP Configuration
 # TWRP specific build flags by Depesh
@@ -178,26 +177,28 @@ TW_BRIGHTNESS_PATH := "/sys/devices/platform/sprd_backlight/backlight/sprd_backl
 TARGET_RECOVERY_LCD_BACKLIGHT_PATH := \"/sys/devices/platform/sprd_backlight/backlight/sprd_backlight/brightness\"
 TW_MAX_BRIGHTNESS := 125
 TW_DEFAULT_BRIGHTNESS := 95
-TW_THEME := portrait_hdpi
+#TW_THEME := portrait_hdpi
 TW_EXTRA_LANGUAGES := false
 TW_DEFAULT_LANGUAGE := ru
 TW_EXCLUDE_APEX := true
-TW_SCREEN_BLANK_ON_BOOT := true
-TW_INPUT_BLACKLIST := "hbtp_vm"
+#TW_SCREEN_BLANK_ON_BOOT := true
+#TW_INPUT_BLACKLIST := "hbtp_vm"
 #TW_NO_LEGACY_PROPS := true
-#TW_USE_TOOLBOX := true
+TW_USE_TOOLBOX := true
 HAVE_SELINUX := false
 # system won't be unmounted,
 TW_NEVER_UNMOUNT_SYSTEM := true
 TW_NO_SCREEN_BLANK := false
 TW_USE_MODEL_HARDWARE_ID_FOR_DEVICE_ID := true
 #TW_INCLUDE_FASTBOOTD := true
-TW_FORCE_USE_BUSYBOX := true
+#TW_FORCE_USE_BUSYBOX := true
 TW_CUSTOM_POWER_BUTTON := 116
 #TW_FORCE_CPUINFO_FOR_DEVICE_ID := true
 #TW_OVERRIDE_SYSTEM_PROPS := "ro.build.fingerprint"
+# See here : https://github.com/omnirom/android_b...ndroid.mk#L435
 TARGET_RECOVERY_DEVICE_MODULES := tzdata
 TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/usr/share/zoneinfo/tzdata
+#TW_NO_HAPTICS := true
 
 # Libresetprop & resetprop
 #TW_INCLUDE_LIBRESETPROP := true
@@ -205,18 +206,18 @@ TW_INCLUDE_RESETPROP := true
 TW_INCLUDE_REPACKTOOLS := true
 
 # Storage
-TW_NO_USB_STORAGE := true
+#TW_NO_USB_STORAGE := true
 TW_DEFAULT_EXTERNAL_STORAGE := true
 #TW_EXTERNAL_STORAGE_PATH := "/sdcard"
 #TW_EXTERNAL_STORAGE_MOUNT_POINT := "data"
 #TW_INTERNAL_STORAGE_PATH := "/data"
-#TW_INTERNAL_STORAGE_MOUNT_POINT := "data"
+#TW_INTERNAL_STORAGE_MOUNT_POINT := "dm-0"
 # Fuse
 TW_INCLUDE_NTFS_3G    := true
 # exFAT FS Support
-TW_INCLUDE_FUSE_EXFAT := true
+#TW_INCLUDE_FUSE_EXFAT := true
 # NTFS Support
-TW_INCLUDE_FUSE_NTFS := true
+#TW_INCLUDE_FUSE_NTFS := true
 
 
 # Exludes
