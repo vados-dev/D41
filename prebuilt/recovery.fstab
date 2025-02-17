@@ -47,7 +47,7 @@ auto                 vfat     /devices/platform/soc/soc:ap-ahb/20200000.usb/musb
 auto                 vfat     /devices/platform/soc/soc:ap-ahb/20300000.sdio/mmc_host/mmc1/mmc1:*/block/mmcblk1     flags=display=auto
 
 #/storage/sdcard0    vfat     /dev/block/platform/soc/soc:ap-ahb/20300000.sdio/mmcblk1p1                 flags=fsflags=utf8;display="Micro SDcard";storage;wipeingui;removable;backup=0
-/external_sd	       vfat	    /dev/block/mmcblk1p1	/dev/block/mmcblk1		         flags=fsflags=utf8;display="External SDcard";storage;removable;backup=0;
+/external_sd	       vfat	    /dev/block/mmcblk1p1	/dev/block/mmcblk1		         flags=fsflags=utf8;display="External SDcard";storage;removable;backup=0;fsflags=utf8
 
 # Examples
 #/data               f2fs     /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata          flags=display=data;backup=1;flashimg=1;encryptable=footer;encryptable=check

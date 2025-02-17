@@ -6,6 +6,7 @@ import /init.recovery.usb.rc
 import /init.recovery.service.rc
 import /init.recovery.vold_decrypt.rc
 import /init.recovery.${ro.hardware}.rc
+import /init.${ro.zygote}.rc
 
 on early-init
     # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
@@ -33,31 +34,35 @@ on init
     export PATH /sbin:/system/bin:/vendor/bin
     export LD_LIBRARY_PATH /sbin
 
-    export ANDROID_ROOT /system_root
+    export ANDROID_ROOT /system
     export ANDROID_DATA /data
     export EXTERNAL_STORAGE /sdcard
     export SECONDARY_STORAGE /storage/sdcard0
     loglevel 7
 
     symlink /system/etc /etc
-    #symlink /system/vendor /vendor
+    symlink /system/vendor /vendor
 	
     mkdir /storage
     mkdir /storage/sdcard1
-    mkdir /storage/sdcard0						  
-    symlink /storage/sdcard0 /mnt/sdcard
+    mkdir /external_sd
+#    mkdir /storage/sdcard0						  
+#    symlink /storage/sdcard0 /mnt/sdcard
+    symlink /external_sd /mnt/sdcard
+    symlink /external_sd /storage/sdcard0
     symlink /system/etc/bluetooth /etc/bluetooth
 
     mkdir /sdcard
     mkdir /system
     mkdir /data
+    mkdir /qcdata
     mkdir /cache
     mkdir /sideload
     mount tmpfs tmpfs /tmp
     mount cgroup none /acct cpuacct
     mkdir /acct/uid
     chmod root shell /tmp
-    chmod 0775 /tmp
+    chmod 0777 /tmp
     mkdir /systeminfo 0777 system system
 
 #add for sdcard path as same as android @{

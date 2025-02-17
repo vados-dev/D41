@@ -9,6 +9,8 @@ on init
     chmod 766 /proc/cpwcn/wdtirq
 
 on fs
+    install_keyring
+    
     mkdir /data/misc/bluedroid 0770 bluetooth net_bt_stack
     mkdir /data/misc/bluetooth 0770 system system
     

@@ -14,12 +14,25 @@ export LC_ALL=C
 #BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 
 # Architecture
+#TARGET_ARCH := arm64
+#TARGET_ARCH_VARIANT := armv8-a
+#TARGET_CPU_ABI := arm64-v8a
+#TARGET_CPU_ABI2 :=
+#TARGET_CPU_VARIANT := generic
+
+#TARGET_2ND_ARCH := arm
+#TARGET_2ND_ARCH_VARIANT := armv7-a-neon
+#TARGET_2ND_CPU_ABI := armeabi-v7a
+#TARGET_2ND_CPU_ABI2 := armeabi
+#TARGET_2ND_CPU_VARIANT := cortex-a53
+#TARGET_2ND_CPU_VARIANT_RUNTIME := generic
+
 TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_ABI := armeabi-v7a
 TARGET_CPU_ABI2 := armeabi
 TARGET_CPU_VARIANT := generic
-TARGET_CPU_VARIANT_RUNTIME := generic
+TARGET_CPU_VARIANT_RUNTIME := armv8-a
 
 TARGET_CPU_SMP := true
 
@@ -29,7 +42,7 @@ ENABLE_SCHEDBOOST := true
 
 # FOCKING BINDER
 TARGET_USES_64_BIT_BINDER := true
-#TARGET_SUPPORTS_32_BIT_APPS := true
+TARGET_SUPPORTS_32_BIT_APPS := true
 
 # APEX
 OVERRIDE_TARGET_FLATTEN_APEX := true
@@ -38,10 +51,13 @@ OVERRIDE_TARGET_FLATTEN_APEX := true
 TARGET_NO_BOOTLOADER := true
 TARGET_BOOTLOADER_BOARD_NAME := sl8541e_cus_32b
 
-# Kernel
+# Kernel armv7l
+TARGET_KERNEL_ARCH := armv7l
 BOARD_KERNEL_BASE := 0x00000000
-BOARD_KERNEL_CMDLINE :=  console=ttyS1,115200n8 lcd_id=ID770703 lcd_base=99aee000 lcd_size=1280x320
+BOARD_KERNEL_CMDLINE := console=ttyS1,115200n8 lcd_id=ID770703 lcd_base=99aee000 lcd_size=1280x320
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
+BOARD_KERNEL_CMDLINE += androidboot.configfs=true
+BOARD_KERNEL_CMDLINE += androidboot.hardware=sl8541e_cus_go
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_RAMDISK_OFFSET := 0x05400000
 BOARD_KERNEL_TAGS_OFFSET := 0x00000100
@@ -49,7 +65,9 @@ BOARD_MKBOOTIMG_ARGS += --ramdisk_offset $(BOARD_RAMDISK_OFFSET)
 BOARD_MKBOOTIMG_ARGS += --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
 BOARD_KERNEL_IMAGE_NAME := kernel
 BOARD_KERNEL_SEPARATED_DT := true
-TARGET_KERNEL_CONFIG := sprd_sharkle_defconfig
+#BOARD_INCLUDE_RECOVERY_DTBO := true
+#BOARD_MKBOOTIMG_ARGS := --header_version $(BOARD_BOOTIMG_HEADER_VERSION)
+TARGET_KERNEL_CONFIG := sl8541e_cus_go_defconfig
 TARGET_KERNEL_SOURCE := kernel/sprd/sl8541e_cus_go
 
 # Kernel - prebuilt
@@ -79,14 +97,14 @@ BOARD_VENDORIMAGE_PARTITION_SIZE := 314572800
 BOARD_HAS_LARGE_FILESYSTEM := true
 BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 
-BOARD_BUILD_SYSTEM_ROOT_IMAGE := true
+BOARD_BUILD_SYSTEM_ROOT_IMAGE := false
 
 # Workaround for error copying vendor files to recovery ramdisk
 TARGET_COPY_OUT_VENDOR := vendor
 
 # Platform
-TARGET_BOARD_PLATFORM := sp9832e
-TARGET_BOARD_PLATFORM_GPU := midgard
+TARGET_BOARD_PLATFORM := sc9832e
+TARGET_BOARD_PLATFORM_GPU := mali-midgard
 
 # MTP
 TW_HAS_MTP := true
@@ -120,12 +138,18 @@ BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 2
 PLATFORM_SECURITY_PATCH := 2018-09-05
 
 # Crypto
-TW_INCLUDE_CRYPTO := true
-TW_CRYPTO_USE_SYSTEM_VOLD := uncrypt keymaster-3-0-service
+#TW_INCLUDE_CRYPTO := true
+#TW_CRYPTO_USE_SYSTEM_VOLD := servicemanager hwservicemanager vndservicemanager keymaster-3-0-service gatekeeper-1-0-service
 #hwservicemanager servicemanager vold gatekeeperd
 # qseecomd keymaster-3-0-qti
-TW_CRYPTO_SYSTEM_VOLD_MOUNT := system vendor prodnv misc miscdata
-TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
+#TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
+#TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
+#TARGET_HW_DISK_ENCRYPTION := true
+TW_CRYPTO_FS_TYPE := "ext4"
+TW_CRYPTO_REAL_BLKDEV := "/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata"
+TW_CRYPTO_MNT_POINT := "/data"
+TW_CRYPTO_FS_OPTIONS := "noatime,nosuid,nodev,discard,inline_xattr,inline_data=ordered"
+#
 #TW_INCLUDE_CRYPTO_FBE := true
 #TW_INCLUDE_FBE_METADATA_DECRYPT := true
 #BOARD_USES_METADATA_PARTITION := true
@@ -138,7 +162,6 @@ TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
 #TW_CRYPTO_MNT_POINT := "/data"
 #TW_CRYPTO_FS_OPTIONS := "noatime,nosuid,nodev,discard,inline_xattr,inline_data=ordered"
 
-
 # Recovery
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
@@ -148,7 +171,7 @@ RECOVERY_SDCARD_ON_DATA := true
 TARGET_USES_MKE2FS := true
 #TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/etc/recovery.fstab
 #TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/recovery.fstab
-#TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
+TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
 # system.prop
 TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
 #RECOVERY_VARIANT := twrp
@@ -185,7 +208,7 @@ TW_EXCLUDE_APEX := true
 #TW_INPUT_BLACKLIST := "hbtp_vm"
 #TW_NO_LEGACY_PROPS := true
 TW_USE_TOOLBOX := true
-HAVE_SELINUX := false
+#HAVE_SELINUX := true
 # system won't be unmounted,
 TW_NEVER_UNMOUNT_SYSTEM := true
 TW_NO_SCREEN_BLANK := false
@@ -197,8 +220,11 @@ TW_CUSTOM_POWER_BUTTON := 116
 #TW_OVERRIDE_SYSTEM_PROPS := "ro.build.fingerprint"
 # See here : https://github.com/omnirom/android_b...ndroid.mk#L435
 TARGET_RECOVERY_DEVICE_MODULES := tzdata
-TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/usr/share/zoneinfo/tzdata
+TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/system/usr/share/zoneinfo/tzdata 
+TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/sbin/android.hardware.gatekeeper@1.0-service
+TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/sbin/android.hardware.keymaster@3.0-service
 #TW_NO_HAPTICS := true
+TW_LOAD_VENDOR_FIRMWARE := "sf_trusty.elf"
 
 # Libresetprop & resetprop
 #TW_INCLUDE_LIBRESETPROP := true
@@ -217,8 +243,7 @@ TW_INCLUDE_NTFS_3G    := true
 # exFAT FS Support
 #TW_INCLUDE_FUSE_EXFAT := true
 # NTFS Support
-#TW_INCLUDE_FUSE_NTFS := true
-
+#TW_INCLUDE_FUSE_NTFS := true    
 
 # Exludes
 # don't include default init.recovery.usb.rc, provide your own or use needed defines inside init.recovery.$DEVICE.rc

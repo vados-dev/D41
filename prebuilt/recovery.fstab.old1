@@ -21,8 +21,8 @@
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/gpsgl                 /gnssmodem          emmc    defaults    defaults
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/gpsbd                 /gnssbdmodem        emmc    defaults    defaults
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/pm_sys                /pmsys              emmc    defaults    defaults
-
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/misc                  /misc               emmc    defaults    defaults
+/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/miscdata              /misc               emmc    defaults    defaults
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/boot                  /boot               emmc    defaults    defaults
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/recovery              /recovery           emmc    defaults    defaults
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/persist               /persist            emmc    defaults    defaults
@@ -31,6 +31,7 @@
 
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/system                /system             ext4    ro,barrier=1    wait
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/vendor                /vendor             ext4    ro,barrier=1    wait
+/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/qcdata		       /qcdata             ext4    rw,noatime,nosuid,nodev,nomblk_io_submit,noauto_da_alloc wait,check
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata              /data               f2fs    noatime,nosuid,nodev,discard,inline_xattr,inline_data    wait,encryptable=footer,check
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/cache                 /cache              ext4    noatime,nosuid,nodev,nomblk_io_submit,noauto_da_alloc    wait,check
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/prodnv                /productinfo        ext4    noatime,nosuid,nodev,nomblk_io_submit,noauto_da_alloc     wait,check
