@@ -111,6 +111,59 @@ on init
     # that they can be chown'd to system:system later on boot
     write /sys/class/leds/vibrator/trigger "transient"
 
+# Healthd can trigger a full boot from charger mode by signaling this
+# property when the power button is held.
+on property:sys.boot_from_charger_mode=1
+    class_stop charger
+    trigger late-init
+
+on load_persist_props_action
+    load_persist_props
+    start logd
+    start logd-reinit
+
+# Indicate to fw loaders that the relevant mounts are up.
+on firmware_mounts_complete
+    rm /dev/.booting
+
+
+# Mount filesystems and start core system services.
+on late-init
+    trigger early-fs
+    trigger fs
+    trigger post-fs
+
+    # Mount fstab in init.{$device}.rc by mount_all with '--late' parameter
+    # to only mount entries with 'latemount'. This is needed if '--early' is
+    # specified in the previous mount_all command on the fs stage.
+    # With /system mounted and properties form /system + /factory available,
+    # some services can be started.
+    trigger late-fs
+
+    # Now we can mount /data. File encryption requires keymaster to decrypt
+    # /data, which in turn can only be loaded when system properties are present.
+    trigger post-fs-data
+
+    # Now we can start zygote for devices with file based encryption
+    trigger zygote-start
+
+    # Load properties, pre-Android 6.0
+    trigger load_all_props_action
+
+    # Load properties from /system/ + /factory after fs mount. Place
+    # this in another action so that the load will be scheduled after the prior
+    # issued fs triggers have completed.
+    trigger load_system_props_action
+
+    # Load properties, Android 6.0+, vendor init lives here
+    trigger load_persist_props_action
+
+    # Remove a file to wake up anything waiting for firmware
+    trigger firmware_mounts_complete
+
+    trigger early-boot
+    trigger boot
+
 on fs
     # pstore/ramoops previous console log
     mount pstore pstore /sys/fs/pstore
@@ -126,8 +179,8 @@ on post-fs
 	
     # start essential services
     start logd
-    start servicemanager
-    start hwservicemanager
+#    start sys_servicemanager
+    start sys_hwservicemanager
     start vndservicemanager
 
     # once everything is setup, no need to modify /
@@ -186,6 +239,29 @@ on late-fs
     # HALs required before storage encryption can get unlocked (FBE/FDE)
     class_start early_hal
 
+# It is recommended to put unnecessary data/ initialization from post-fs-data
+# to start-zygote in device's init.rc to unblock zygote start.
+on zygote-start && property:ro.crypto.state=unencrypted
+    # A/B update verifier that marks a successful boot.
+    exec_start update_verifier_nonencrypted
+    start netd
+    start zygote
+    start zygote_secondary
+
+on zygote-start && property:ro.crypto.state=unsupported
+    # A/B update verifier that marks a successful boot.
+    exec_start update_verifier_nonencrypted
+    start netd
+    start zygote
+    start zygote_secondary
+
+on zygote-start && property:ro.crypto.state=encrypted && property:ro.crypto.type=file
+    # A/B update verifier that marks a successful boot.
+    exec_start update_verifier_nonencrypted
+    start netd
+    start zygote
+    start zygote_secondary
+
 on post-fs-data
     # We chown/chmod /data again so because mount is run as root + defaults
     chown system system /data
@@ -197,14 +273,20 @@ on post-fs-data
     start vold
     installkey /data
 
+    # Set SELinux security contexts on upgrade or policy update.
+    restorecon --recursive --skip-ce /data
+
+    # Check any timezone data in /data is newer than the copy in /system, delete if not.
+    exec - system system -- /system/bin/tzdatacheck /system/usr/share/zoneinfo /data/misc/zoneinfo
+
 on boot
     ifup lo
     hostname localhost
     domainname localdomain
+
     # Memory management.  Basic kernel parameters, and allow the high
     # level system server to be able to adjust the kernel OOM driver
     # parameters to match how it is managing things.
-    write /proc/sys/vm/overcommit_memory 1
     write /proc/sys/vm/min_free_order_shift 4
     chown root system /sys/module/lowmemorykiller/parameters/adj
     chmod 0664 /sys/module/lowmemorykiller/parameters/adj
@@ -285,11 +367,11 @@ on boot
 
     setprop sys.usb.configfs 1
     class_start default
-    copy /init.recovery.usb.rc /etc/init.recovery.usb.rc.bak
-    copy /default.prop /etc/default.prop.bak
-    copy /init.recovery.usb.rc /license/init.pb.usb.rc
-    setprop ro.miui.has_cust_partition true
-    
+
+on nonencrypted
+    class_start main
+    class_start late_start
+
 # Load properties, pre-Android 6.0
 on load_all_props_action
     load_all_props
@@ -298,41 +380,45 @@ on load_all_props_action
 on load_system_props_action
     load_system_props
 
-# Load properties, Android 6.0+, vendor init lives here
-on load_persist_props_action
-    load_persist_props
-
-on firmware_mounts_complete
-    rm /dev/.booting
-
-# Mount filesystems and start core system services.
-on late-init
-    trigger early-fs
-    trigger fs
-    trigger post-fs
-    trigger post-fs-data
-
-    # Load properties, pre-Android 6.0
-    trigger load_all_props_action
-
-    # Load properties from /system/ + /factory after fs mount. Place
-    # this in another action so that the load will be scheduled after the prior
-    # issued fs triggers have completed.
-    trigger load_system_props_action
-
-    # Load properties, Android 6.0+, vendor init lives here
-    trigger load_persist_props_action
-
-    # Remove a file to wake up anything waiting for firmware
-    trigger firmware_mounts_complete
-
-    trigger early-boot
-    trigger boot
-
 service console /sbin/sh
     class default
     console
     seclabel u:r:shell:s0
+
+on property:sys.init_log_level=*
+    loglevel ${sys.init_log_level}
+
+on charger
+    class_start charger
+
+on property:vold.decrypt=trigger_reset_main
+    class_reset main
+
+on property:vold.decrypt=trigger_load_persist_props
+    load_persist_props
+    start logd
+    start logd-reinit
+
+on property:vold.decrypt=trigger_post_fs_data
+    trigger post-fs-data
+
+on property:vold.decrypt=trigger_restart_min_framework
+    # A/B update verifier that marks a successful boot.
+    exec_start update_verifier
+    class_start main
+
+on property:vold.decrypt=trigger_restart_framework
+    # A/B update verifier that marks a successful boot.
+    exec_start update_verifier
+    class_start main
+    class_start late_start
+
+on property:vold.decrypt=trigger_shutdown_framework
+    class_reset late_start
+    class_reset main
+
+on property:sys.boot_completed=1
+    bootchart stop
 
 on property:sys.powerctl=*
    powerctl ${sys.powerctl}
@@ -363,7 +449,6 @@ on property:ro.debuggable=1
 on property:ro.bootmode=recovery
     class_start recovery
     trigger adb_enable
-
 
 # Restart adbd so it can run as root
 on property:service.adb.root=1

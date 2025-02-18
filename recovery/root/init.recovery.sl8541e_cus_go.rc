@@ -1,6 +1,42 @@
+import /init.recovery.environ.rc
 import /init.recovery.common.rc
-import /init.recovery.usb.configfs.rc
 import /init.recovery.cali.rc
+import /init.recovery.zygote.rc
+import /init.recovery.${ro.zygote}.rc
+
+service keymaster-3-0 /vendor/bin/hw/android.hardware.keymaster@3.0-service
+    class early_hal
+    user system
+    group system drmrpc
+
+service sys_vold /system/bin/vold \
+        --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \
+        --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0
+    socket vold stream 0660 root mount
+    socket cryptd stream 0660 root mount
+    setenv PATH /system/bin
+    setenv LD_LIBRARY_PATH /system/lib64:/system/lib:/system/lib/hw:/vendor/lib:/vendor/lib/hw
+    disabled
+    oneshot
+
+service vndservicemanager /vendor/bin/vndservicemanager /dev/vndbinder
+    user root
+    group root
+    setenv PATH /vendor/bin
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib
+    disabled
+    oneshot
+    seclabel u:r:vold:s0
+
+on post-fs
+    start modulesdriver
+
+service modulesdriver /sbin/modulesdriver.sh
+    oneshot
+    disabled
+    user root
+    group root
+    seclabel u:r:recovery:s0
 							
 on init
     start healthd

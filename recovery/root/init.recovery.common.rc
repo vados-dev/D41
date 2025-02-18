@@ -1,6 +1,7 @@
-import /init.recovery.${ro.hardware}.usb.rc
-#import init.ram.rc
-import init.recovery.storage.rc
+import /init.recovery.usb.configfs.rc
+import /init.recovery.usb.rc
+import /init.recovery.ram.rc
+import /init.recovery.storage.rc
 
 on early-init
     mount debugfs debugfs /sys/kernel/debug
@@ -70,6 +71,10 @@ on post-fs
     chmod 0755 /sys/kernel/debug/tracing
 	chmod 0666 /dev/null
 	chown root root /dev/null
+
+on post-fs-data && property:ro.crypto.type=block
+    mkdir /data/misc/bootstat 0700 system log
+    exec - system log -- /system/bin/bootstat -r post_decrypt_time_elapsed
 
 on post-fs-data
     mkdir /data/local/englog 0777

@@ -27,6 +27,10 @@ export LC_ALL=C
 #TARGET_2ND_CPU_VARIANT := cortex-a53
 #TARGET_2ND_CPU_VARIANT_RUNTIME := generic
 
+# HIDL
+DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/recovery/root/vendor/manifest.xml
+DEVICE_MATRIX_FILE := $(DEVICE_PATH)/recovery/root/vendor/compatibility_matrix.xml
+
 TARGET_ARCH := arm
 TARGET_ARCH_VARIANT := armv7-a-neon
 TARGET_CPU_ABI := armeabi-v7a
@@ -52,7 +56,8 @@ TARGET_NO_BOOTLOADER := true
 TARGET_BOOTLOADER_BOARD_NAME := sl8541e_cus_32b
 
 # Kernel armv7l
-TARGET_KERNEL_ARCH := armv7l
+#TARGET_KERNEL_ARCH := armv7l
+BOARD_BOOTIMG_HEADER_VERSION := 2
 BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_CMDLINE := console=ttyS1,115200n8 lcd_id=ID770703 lcd_base=99aee000 lcd_size=1280x320
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
@@ -138,17 +143,17 @@ BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 2
 PLATFORM_SECURITY_PATCH := 2018-09-05
 
 # Crypto
-#TW_INCLUDE_CRYPTO := true
-#TW_CRYPTO_USE_SYSTEM_VOLD := servicemanager hwservicemanager vndservicemanager keymaster-3-0-service gatekeeper-1-0-service
-#hwservicemanager servicemanager vold gatekeeperd
+TW_INCLUDE_CRYPTO := true
+TW_CRYPTO_USE_SYSTEM_VOLD := servicemanager hwservicemanager vndservice sprdstorageproxyd keymaster-3-0 gatekeeper-1-0 sprdtrusty keystore
+#hwservicemanager servicemanager 
 # qseecomd keymaster-3-0-qti
-#TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
-#TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
+TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
+TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
 #TARGET_HW_DISK_ENCRYPTION := true
-TW_CRYPTO_FS_TYPE := "ext4"
-TW_CRYPTO_REAL_BLKDEV := "/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata"
-TW_CRYPTO_MNT_POINT := "/data"
-TW_CRYPTO_FS_OPTIONS := "noatime,nosuid,nodev,discard,inline_xattr,inline_data=ordered"
+#TW_CRYPTO_FS_TYPE := "ext4"
+#TW_CRYPTO_REAL_BLKDEV := "/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata"
+#TW_CRYPTO_MNT_POINT := "/data"
+#TW_CRYPTO_FS_OPTIONS := "noatime,nosuid,nodev,discard,inline_xattr,inline_data=ordered"
 #
 #TW_INCLUDE_CRYPTO_FBE := true
 #TW_INCLUDE_FBE_METADATA_DECRYPT := true
@@ -169,9 +174,9 @@ TARGET_USERIMAGES_USE_F2FS := true
 RECOVERY_SDCARD_ON_DATA := true
 # Use mke2fs to create ext4 images
 TARGET_USES_MKE2FS := true
-#TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/etc/recovery.fstab
+TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
 #TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/recovery.fstab
-TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
+#TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
 # system.prop
 TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
 #RECOVERY_VARIANT := twrp
@@ -198,6 +203,7 @@ TARGET_SCREEN_HEIGHT := 2000
 TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.gs6/lun.%d/file
 TW_BRIGHTNESS_PATH := "/sys/devices/platform/sprd_backlight/backlight/sprd_backlight/brightness"
 TARGET_RECOVERY_LCD_BACKLIGHT_PATH := \"/sys/devices/platform/sprd_backlight/backlight/sprd_backlight/brightness\"
+#TW_CUSTOM_CPU_TEMP_PATH := /sys/devices/virtual/thermal/thermal_zone0/temp
 TW_MAX_BRIGHTNESS := 125
 TW_DEFAULT_BRIGHTNESS := 95
 #TW_THEME := portrait_hdpi
@@ -219,12 +225,12 @@ TW_CUSTOM_POWER_BUTTON := 116
 #TW_FORCE_CPUINFO_FOR_DEVICE_ID := true
 #TW_OVERRIDE_SYSTEM_PROPS := "ro.build.fingerprint"
 # See here : https://github.com/omnirom/android_b...ndroid.mk#L435
-TARGET_RECOVERY_DEVICE_MODULES := tzdata
-TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/system/usr/share/zoneinfo/tzdata 
-TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/sbin/android.hardware.gatekeeper@1.0-service
-TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/sbin/android.hardware.keymaster@3.0-service
+#TARGET_RECOVERY_DEVICE_MODULES := tzdata
+#TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/system/usr/share/zoneinfo/tzdata 
+#TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/sbin/android.hardware.gatekeeper@1.0-service
+#TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/sbin/android.hardware.keymaster@3.0-service
 #TW_NO_HAPTICS := true
-TW_LOAD_VENDOR_FIRMWARE := "sf_trusty.elf"
+#TW_LOAD_VENDOR_FIRMWARE := "sf_trusty.elf"
 
 # Libresetprop & resetprop
 #TW_INCLUDE_LIBRESETPROP := true
@@ -232,7 +238,7 @@ TW_INCLUDE_RESETPROP := true
 TW_INCLUDE_REPACKTOOLS := true
 
 # Storage
-#TW_NO_USB_STORAGE := true
+TW_NO_USB_STORAGE := true
 TW_DEFAULT_EXTERNAL_STORAGE := true
 #TW_EXTERNAL_STORAGE_PATH := "/sdcard"
 #TW_EXTERNAL_STORAGE_MOUNT_POINT := "data"
