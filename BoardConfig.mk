@@ -63,6 +63,7 @@ BOARD_KERNEL_CMDLINE := console=ttyS1,115200n8 lcd_id=ID770703 lcd_base=99aee000
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
 BOARD_KERNEL_CMDLINE += androidboot.configfs=true
 BOARD_KERNEL_CMDLINE += androidboot.hardware=sl8541e_cus_go
+BOARD_KERNEL_CMDLINE += loop.max_part=7
 BOARD_KERNEL_PAGESIZE := 2048
 BOARD_RAMDISK_OFFSET := 0x05400000
 BOARD_KERNEL_TAGS_OFFSET := 0x00000100
@@ -144,7 +145,7 @@ PLATFORM_SECURITY_PATCH := 2018-09-05
 
 # Crypto
 TW_INCLUDE_CRYPTO := true
-TW_CRYPTO_USE_SYSTEM_VOLD := servicemanager hwservicemanager vndservice sprdstorageproxyd keymaster-3-0 gatekeeper-1-0 sprdtrusty keystore
+TW_CRYPTO_USE_SYSTEM_VOLD := servicemanager hwservicemanager keymaster-3-0 gatekeeper-1-0
 #hwservicemanager servicemanager 
 # qseecomd keymaster-3-0-qti
 TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
@@ -174,7 +175,7 @@ TARGET_USERIMAGES_USE_F2FS := true
 RECOVERY_SDCARD_ON_DATA := true
 # Use mke2fs to create ext4 images
 TARGET_USES_MKE2FS := true
-TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
+#TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/etc/recovery.fstab
 #TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/recovery.fstab
 #TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
 # system.prop
@@ -211,10 +212,10 @@ TW_EXTRA_LANGUAGES := false
 TW_DEFAULT_LANGUAGE := ru
 TW_EXCLUDE_APEX := true
 #TW_SCREEN_BLANK_ON_BOOT := true
-#TW_INPUT_BLACKLIST := "hbtp_vm"
-#TW_NO_LEGACY_PROPS := true
+TW_INPUT_BLACKLIST := "hbtp_vm"
+TW_NO_LEGACY_PROPS := true
 TW_USE_TOOLBOX := true
-#HAVE_SELINUX := true
+HAVE_SELINUX := true
 # system won't be unmounted,
 TW_NEVER_UNMOUNT_SYSTEM := true
 TW_NO_SCREEN_BLANK := false
@@ -227,10 +228,11 @@ TW_CUSTOM_POWER_BUTTON := 116
 # See here : https://github.com/omnirom/android_b...ndroid.mk#L435
 #TARGET_RECOVERY_DEVICE_MODULES := tzdata
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/system/usr/share/zoneinfo/tzdata 
-#TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/sbin/android.hardware.gatekeeper@1.0-service
-#TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/sbin/android.hardware.keymaster@3.0-service
-#TW_NO_HAPTICS := true
-#TW_LOAD_VENDOR_FIRMWARE := "sf_trusty.elf"
+#TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/hw/android.hardware.gatekeeper@1.0-service
+#TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/hw/android.hardware.keymaster@3.0-service
+#TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/vndservicemanager
+TW_NO_HAPTICS := true
+TW_LOAD_VENDOR_FIRMWARE := "sf_trusty.elf"
 
 # Libresetprop & resetprop
 #TW_INCLUDE_LIBRESETPROP := true

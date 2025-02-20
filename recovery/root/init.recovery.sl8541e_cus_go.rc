@@ -3,30 +3,80 @@ import /init.recovery.common.rc
 import /init.recovery.cali.rc
 import /init.recovery.zygote.rc
 import /init.recovery.${ro.zygote}.rc
+import /system/etc/init/uncrypt.rc
+import /system/etc/init/vdc.rc
 
-service keymaster-3-0 /vendor/bin/hw/android.hardware.keymaster@3.0-service
-    class early_hal
-    user system
-    group system drmrpc
+service healthd /system/bin/healthd -r
+    critical
+    seclabel u:r:healthd:s0
+
+service sys_keystore /system/bin/keystore /data/misc/keystore
+    class main
+    user keystore
+    group keystore drmrpc readproc root system
+    seclabel u:r:recovery:s0
+
+service ven_gatekeeper-1-0 /vendor/bin/hw/android.hardware.gatekeeper@1.0-service
+    user root
+    group root
+    disabled
+    seclabel u:r:recovery:s0
+
+service sys_hwservicemanager /system/bin/hwservicemanager
+    user root
+    group root
+    setenv PATH /system/bin:/system/bin/hw
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/hw:/vendor/lib:/vendor/lib/hw
+    onrestart setprop hwservicemanager.ready false
+    onrestart class_restart hal
+    onrestart class_restart early_hal
+    disabled
+    oneshot
+    seclabel u:r:vold:s0
+
+service sys_servicemanager /system/bin/servicemanager
+    user root
+    group root readproc
+    disabled
+    seclabel u:r:recovery:s0
+
+service ven_keymaster-3-0 /vendor/bin/hw/android.hardware.keymaster@3.0-service
+    user root
+    group root
+    setenv PATH /vendor/bin:/system/bin
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/hw:/vendor/lib:/vendor/lib/hw
+    disabled
+    oneshot
+    seclabel u:r:vold:s0
 
 service sys_vold /system/bin/vold \
         --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \
         --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0
     socket vold stream 0660 root mount
     socket cryptd stream 0660 root mount
-    setenv PATH /system/bin
-    setenv LD_LIBRARY_PATH /system/lib64:/system/lib:/system/lib/hw:/vendor/lib:/vendor/lib/hw
+    setenv PATH /system/bin:/system/bin/hw
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/hw:/vendor/lib:/vendor/lib/hw
     disabled
     oneshot
 
-service vndservicemanager /vendor/bin/vndservicemanager /dev/vndbinder
+service ven_vndservicemanager /vendor/bin/vndservicemanager /dev/vndbinder
     user root
     group root
-    setenv PATH /vendor/bin
-    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib
+    setenv PATH /vendor/bin:/system/bin:/system/bin/hw
+    setenv LD_LIBRARY_PATH /system/lib:/system/lib/hw:/vendor/lib:/vendor/lib/hw
     disabled
     oneshot
     seclabel u:r:vold:s0
+
+service ven_zram /vendor/bin/zram.sh
+    disabled
+    oneshot
+    seclabel u:object_r:zram_exec:s0
+
+on property:ro.crypto.type=file
+    start keymaster-3-0
+    start gatekeeper-1-0
+    start servicemanager
 
 on post-fs
     start modulesdriver

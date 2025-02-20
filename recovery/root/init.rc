@@ -1,3 +1,4 @@
+import /init.recovery.environ.rc
 import /init.recovery.logd.rc
 import /init.recovery.ldconfig.rc
 import /init.recovery.mksh.rc
@@ -6,7 +7,7 @@ import /init.recovery.usb.rc
 import /init.recovery.service.rc
 import /init.recovery.vold_decrypt.rc
 import /init.recovery.${ro.hardware}.rc
-import /init.${ro.zygote}.rc
+import /init.recovery.${ro.zygote}.rc
 
 on early-init
     # Apply strict SELinux checking of PROT_EXEC on mmap/mprotect calls.
@@ -31,8 +32,8 @@ service set_permissive /sbin/permissive.sh
     seclabel u:r:recovery:s0
 
 on init
-    export PATH /sbin:/system/bin:/vendor/bin
-    export LD_LIBRARY_PATH /sbin
+#    export PATH /sbin:/system/bin:/vendor/bin
+#    export LD_LIBRARY_PATH /sbin
 
     export ANDROID_ROOT /system
     export ANDROID_DATA /data
@@ -122,10 +123,13 @@ on load_persist_props_action
     start logd
     start logd-reinit
 
+#on property:vold_decrypt.symlinked_vendor=1
+#    start vold
+#    installkey /data
+
 # Indicate to fw loaders that the relevant mounts are up.
 on firmware_mounts_complete
     rm /dev/.booting
-
 
 # Mount filesystems and start core system services.
 on late-init
@@ -176,17 +180,18 @@ on fs
 
 on post-fs
     load_system_props
+#    mount_all /etc/recovery.vendor.fstab
 	
     # start essential services
     start logd
-#    start sys_servicemanager
+    start sys_servicemanager
     start sys_hwservicemanager
     start vndservicemanager
 
     # once everything is setup, no need to modify /
-    mount rootfs rootfs / ro remount
+#    mount rootfs rootfs / ro remount
     # Mount shared so changes propagate into child namespaces
-    mount rootfs rootfs / shared rec
+#    mount rootfs rootfs / shared rec
     # Mount default storage into root namespace
     mount none /mnt/runtime/default /storage bind rec
     mount none none /storage slave rec
@@ -267,7 +272,7 @@ on post-fs-data
     chown system system /data
     chmod 0771 /data
     # We restorecon /data in case the userdata partition has been reset.
-    restorecon /data
+#    restorecon /data
 
     # Make sure we have the device encryption key.
     start vold
