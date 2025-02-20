@@ -5,6 +5,8 @@ import /init.recovery.zygote.rc
 import /init.recovery.${ro.zygote}.rc
 import /system/etc/init/uncrypt.rc
 import /system/etc/init/vdc.rc
+import /vendor/etc/init/android.hardware.gatekeeper@1.0-service.rc
+import /vendor/etc/init/android.hardware.keymaster@3.0-service.rc
 
 service healthd /system/bin/healthd -r
     critical

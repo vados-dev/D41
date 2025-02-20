@@ -10,7 +10,7 @@ DEVICE_PATH := device/sprd/D41
 # For building with minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
 export LC_ALL=C
-#BUILD_BROKEN_DUP_RULES := true
+BUILD_BROKEN_DUP_RULES := true
 #BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 
 # Architecture
@@ -59,7 +59,8 @@ TARGET_BOOTLOADER_BOARD_NAME := sl8541e_cus_32b
 #TARGET_KERNEL_ARCH := armv7l
 BOARD_BOOTIMG_HEADER_VERSION := 2
 BOARD_KERNEL_BASE := 0x00000000
-BOARD_KERNEL_CMDLINE := console=ttyS1,115200n8 lcd_id=ID770703 lcd_base=99aee000 lcd_size=1280x320
+BOARD_KERNEL_CMDLINE := console=ttyS1,115200n8 loglevel=1 init=/init root=/dev/ram0 vmalloc=360M
+BOARD_KERNEL_CMDLINE += lcd_id=ID770703 lcd_base=99aee000 lcd_size=1280x320
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
 BOARD_KERNEL_CMDLINE += androidboot.configfs=true
 BOARD_KERNEL_CMDLINE += androidboot.hardware=sl8541e_cus_go
@@ -107,6 +108,7 @@ BOARD_BUILD_SYSTEM_ROOT_IMAGE := false
 
 # Workaround for error copying vendor files to recovery ramdisk
 TARGET_COPY_OUT_VENDOR := vendor
+TARGET_COPY_OUT_PRODUCT := productinfo
 
 # Platform
 TARGET_BOARD_PLATFORM := sc9832e
@@ -143,22 +145,25 @@ BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 2
 #PLATFORM_VERSION := 16.1.0
 PLATFORM_SECURITY_PATCH := 2018-09-05
 
+BOARD_USES_RECOVERY_AS_BOOT := true
+TARGET_NO_RECOVERY := true
+
+# Treble
+PRODUCT_FULL_TREBLE_OVERRIDE := true
+
 # Crypto
 TW_INCLUDE_CRYPTO := true
-TW_CRYPTO_USE_SYSTEM_VOLD := servicemanager hwservicemanager keymaster-3-0 gatekeeper-1-0
+TW_CRYPTO_USE_SYSTEM_VOLD := servicemanager vndservicemanager hwservicemanager keymaster-3-0 gatekeeper-1-0 rpmbserver storageproxyd trusty
 #hwservicemanager servicemanager 
 # qseecomd keymaster-3-0-qti
 TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
 TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
-#TARGET_HW_DISK_ENCRYPTION := true
-#TW_CRYPTO_FS_TYPE := "ext4"
-#TW_CRYPTO_REAL_BLKDEV := "/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata"
-#TW_CRYPTO_MNT_POINT := "/data"
-#TW_CRYPTO_FS_OPTIONS := "noatime,nosuid,nodev,discard,inline_xattr,inline_data=ordered"
 #
-#TW_INCLUDE_CRYPTO_FBE := true
-#TW_INCLUDE_FBE_METADATA_DECRYPT := true
-#BOARD_USES_METADATA_PARTITION := true
+TW_INCLUDE_CRYPTO_FBE := true
+TW_INCLUDE_FBE_METADATA_DECRYPT := true
+BOARD_USES_METADATA_PARTITION := true
+# Test sdcard decrypt
+TW_PREPARE_DATA_MEDIA_EARLY := true   
 
 # Encryption by Depesh
 #TARGET_HW_DISK_ENCRYPTION := true

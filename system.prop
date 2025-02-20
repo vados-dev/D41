@@ -43,7 +43,6 @@ ro.bootimage.build.fingerprint=SPRD/sp9832e_1h10_native/sp9832e_1h10:8.1.0/OPM2.
 #
 # ADDITIONAL VENDOR DEFAULT PROPERTIES
 #
-ro.zygote=zygote32
 dalvik.vm.image-dex2oat-Xms=64m
 dalvik.vm.image-dex2oat-Xmx=64m
 dalvik.vm.dex2oat-Xms=64m
