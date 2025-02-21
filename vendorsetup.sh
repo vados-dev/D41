@@ -4,7 +4,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
+#
+#patch -Np1 < ./device/sprd/D41/patch/init.c.patch
 #add_lunch_combo omni_sl8541e_cus_go-eng
 export ANDROID_SET_JAVA_HOME=true
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64

@@ -108,7 +108,7 @@ BOARD_BUILD_SYSTEM_ROOT_IMAGE := false
 
 # Workaround for error copying vendor files to recovery ramdisk
 TARGET_COPY_OUT_VENDOR := vendor
-TARGET_COPY_OUT_PRODUCT := productinfo
+TARGET_COPY_OUT_PRODUCT := product
 
 # Platform
 TARGET_BOARD_PLATFORM := sc9832e
@@ -145,18 +145,19 @@ BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 2
 #PLATFORM_VERSION := 16.1.0
 PLATFORM_SECURITY_PATCH := 2018-09-05
 
-BOARD_USES_RECOVERY_AS_BOOT := true
-TARGET_NO_RECOVERY := true
+BOARD_ROOT_EXTRA_FOLDERS += miscdata
+#BOARD_USES_RECOVERY_AS_BOOT := true
+#TARGET_NO_RECOVERY := true
 
 # Treble
 PRODUCT_FULL_TREBLE_OVERRIDE := true
 
 # Crypto
 TW_INCLUDE_CRYPTO := true
-TW_CRYPTO_USE_SYSTEM_VOLD := servicemanager vndservicemanager hwservicemanager keymaster-3-0 gatekeeper-1-0 rpmbserver storageproxyd trusty
+TW_CRYPTO_USE_SYSTEM_VOLD := true #vndservicemanager hwservicemanager keymaster-3-0 gatekeeper-1-0 
 #hwservicemanager servicemanager 
 # qseecomd keymaster-3-0-qti
-TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
+#TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
 TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
 #
 TW_INCLUDE_CRYPTO_FBE := true
@@ -181,11 +182,25 @@ RECOVERY_SDCARD_ON_DATA := true
 # Use mke2fs to create ext4 images
 TARGET_USES_MKE2FS := true
 #TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/etc/recovery.fstab
-#TARGET_RECOVERY_FSTAB := $(LOCAL_PATH)/recovery.fstab
-#TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
+TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
+TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
 # system.prop
 TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
 #RECOVERY_VARIANT := twrp
+
+# Additional binaries & libraries needed for recovery
+TARGET_RECOVERY_DEVICE_MODULES += \
+    libkeymaster3 \
+    sprdstorageproxyd \
+    libpuresoftkeymasterdevice
+#    ashmemd_aidl_interface-cpp \
+#    libashmemd_client
+
+TW_RECOVERY_ADDITIONAL_RELINK_LIBRARY_FILES += \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libkeymaster3.so \
+    $(TARGET_OUT_SHARED_LIBRARIES)/libpuresoftkeymasterdevice.so 
+#    $(TARGET_OUT_SHARED_LIBRARIES)/ashmemd_aidl_interface-cpp.so \
+#    $(TARGET_OUT_SHARED_LIBRARIES)/libashmemd_client.so
 
 # Display
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
@@ -231,12 +246,16 @@ TW_CUSTOM_POWER_BUTTON := 116
 #TW_FORCE_CPUINFO_FOR_DEVICE_ID := true
 #TW_OVERRIDE_SYSTEM_PROPS := "ro.build.fingerprint"
 # See here : https://github.com/omnirom/android_b...ndroid.mk#L435
-#TARGET_RECOVERY_DEVICE_MODULES := tzdata
+TARGET_RECOVERY_DEVICE_MODULES += tzdata sprdstorageproxyd rpmbserver storageproxyd
+TARGET_RECOVERY_DEVICE_MODULES += debuggerd
+RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/debuggerd
+TARGET_RECOVERY_DEVICE_MODULES += strace
+RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/strace
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/system/usr/share/zoneinfo/tzdata 
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/hw/android.hardware.gatekeeper@1.0-service
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/hw/android.hardware.keymaster@3.0-service
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/vndservicemanager
-TW_NO_HAPTICS := true
+#TW_NO_HAPTICS := true
 TW_LOAD_VENDOR_FIRMWARE := "sf_trusty.elf"
 
 # Libresetprop & resetprop

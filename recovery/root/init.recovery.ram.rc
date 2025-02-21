@@ -155,7 +155,7 @@ on property:ro.run.ramconfig=8
 on property:ro.config.zram.support=true
     setprop sys.vm.swappiness 150
     write /proc/sys/vm/page-cluster  0
-    start zram
+    start ven_zram
 
 #Configurate KSM, then run KSM
 on property:ro.config.ksm.support=true

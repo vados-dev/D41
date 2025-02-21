@@ -35,7 +35,7 @@
 /vendor             ext4      /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/vendor           flags=display="vendor";backup=1;flashimg=1;
 /vendor_image       emmc      /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/vendor           flags=display="Vendor image";backup=1;flashimg=1;
 #/data	            f2fs      /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata         flags=display="userdata";backup=1;forceencrypt=footer;
-/data               f2fs      /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata         flags=display="userdata";backup=1;encryptable=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/miscdata;
+#/data               f2fs      /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata         flags=display="userdata";backup=1;encryptable=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/miscdata;
 /cache               ext4     /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/cache            flags=display="cache";backup=1;flashimg=1;
 /productinfo         ext4     /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/prodnv           flags=display="Productinfo";backup=1;
 #/productinfo_image   emmc     /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/prodnv           flags=display="Productinfo image";backup=1;flashimg=1;
@@ -49,8 +49,7 @@ auto                 vfat     /devices/platform/soc/soc:ap-ahb/20300000.sdio/mmc
 # Examples
 #/data               f2fs      /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata         flags=forceencrypt=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/miscdata;forceencrypt=footer;forceencrypt=check;
 #/data               ext4      /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata         flags=forceencrypt=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/miscdata;forceencrypt=footer;forceencrypt=check;
-#/data		     ext4      /dummydevice								flags=altdevice=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata;forceencrypt=footer;forceencrypt=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/miscdata
-#;length=-16384;encryptable=ice:aes-256-cts
+/data		     ext4      /dummydevice								flags=altdevice=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata;forceencrypt=footer;forceencrypt=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/miscdata;length=-16384;encryptable=ice:aes-256-cts
 
 #/data               f2fs     /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata          flags=display=data;backup=1;flashimg=1;encryptable=footer;encryptable=check
 #/data       	      f2fs    /dummydevice 						                 flags=altdevice=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/userdata;encryptable=footer;encryptable=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/miscdata;length=-16384;encryptable=ice:aes-256-cts
