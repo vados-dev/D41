@@ -1,20 +1,26 @@
 import /init.recovery.environ.rc
 import /init.recovery.common.rc
 import /init.recovery.cali.rc
-import /init.recovery.zygote.rc
-import /init.recovery.${ro.zygote}.rc
-import /system/etc/init/uncrypt.rc
-import /system/etc/init/vdc.rc
-import /system/etc/init/vold.rc
+import /init.recovery.zygote32.rc
 import /vendor/etc/init/android.hardware.gatekeeper@1.0-service.rc
 import /vendor/etc/init/android.hardware.keymaster@3.0-service.rc
-import /vendor/etc/init/rpmbserver_androido.rc
-import /vendor/etc/init/storageproxyd_androidone.rc
-import /vendor/etc/init/zram.rc
+#import /vendor/etc/init/rpmbserver_androido.rc
+#import /vendor/etc/init/storageproxyd_androidone.rc
+import /vendor/etc/init/vndservicemanager.rc
 
-service healthd /sbin/healthd -r
-    critical
-    seclabel u:r:healthd:s0
+#on property:sys.usb.config=fastboot
+#    start servicemanager
+#    start hwservicemanager
+#    restart fastbootd
+
+on property:vendor.sprd.tsupplicant.enabled=1
+    start tsupplicant
+
+service gatekeeperd /sbin/gatekeeperd /data/misc/gatekeeper
+    class late_start
+    user system
+    writepid /dev/cpuset/system-background/tasks
+    seclabel u:r:recovery:s0
 
 service keystore_auth /sbin/keystore_auth
     oneshot
@@ -26,18 +32,21 @@ service keystore_auth /sbin/keystore_auth
 # keystore is started and stopped on demand by TWRP
 service keystore /sbin/keystore /tmp/misc/keystore
     user root
-    group keystore drmrpc readproc root system
+    group root drmrpc readproc
+    disabled
     seclabel u:r:recovery:s0
 
 service hwservicemanager /sbin/hwservicemanager
     user root
-    group root
-    onrestart setprop hwservicemanager.ready false
-#    onrestart class_restart hal
-#    onrestart class_restart early_hal
+    setenv PATH /sbin:/system/bin
+    setenv LD_LIBRARY_PATH /sbin:/system/lib
     disabled
-    oneshot
-    seclabel u:r:vold:s0
+    group root readproc
+    onrestart setprop hwservicemanager.ready false
+    onrestart class_restart hal
+    onrestart class_restart early_hal
+    shutdown critical
+    seclabel u:r:recovery:s0
 
 service servicemanager /sbin/servicemanager
     user root
@@ -45,9 +54,10 @@ service servicemanager /sbin/servicemanager
     disabled
     seclabel u:r:recovery:s0
 
-service wait_for_keymaster /system/bin/wait_for_keymaster
+service wait_for_keymaster /sbin/wait_for_keymaster
     user root
     group root
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/sbin
     disabled
     oneshot
     seclabel u:r:recovery:s0
@@ -55,38 +65,43 @@ service wait_for_keymaster /system/bin/wait_for_keymaster
 service vold /sbin/vold \
         --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \
         --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0
+    class core
     socket vold stream 0660 root mount
     socket cryptd stream 0660 root mount
-    setenv PATH /sbin:/system/bin:/system/bin/hw
-    setenv LD_LIBRARY_PATH /sbin:/system/lib:/system/lib/hw:/vendor/lib:/vendor/lib/hw
-    disabled
-    oneshot
+    ioprio be 2
+    writepid /dev/cpuset/foreground/tasks
+    setenv PATH /sbin:/system/bin
+    setenv LD_LIBRARY_PATH /sbin:/system/lib
+    shutdown critical
+    seclabel u:r:recovery:s0
 
-on property:sprd.storageproxyd.enabled=1
-    mkdir /data/sprd_ss 0770 system system
-    start ven_rpmbproxyd
-    start ven_storagensproxyd
+#on property:hwservicemanager.ready=true
+#    start ven_gatekeeper-1-0
+#    start ven_keymaster-3-1
+#    setprop sprd.storageproxyd.enabled 1
 
-on property:hwservicemanager.ready=true
-    start ven_gatekeeper-1-0
-    start ven_keymaster-4-1
-    setprop sprd.storageproxyd.enabled 1
+#service ven_zram /vendor/bin/zram.sh
+#    disabled
+#    oneshot
+#    seclabel u:object_r:zram_exec:s0
 
-service ven_zram /vendor/bin/zram.sh
-    disabled
-    oneshot
-    seclabel u:object_r:zram_exec:s0
+# One shot invocation to deal with encrypted volume.
+on defaultcrypto
+    exec - root -- /sbin/vdc --wait cryptfs mountdefaultencrypted
+    # vold will set vold.decrypt to trigger_restart_framework (default
+    # encryption) or trigger_restart_min_framework (other encryption)
 
-on property:ro.crypto.type=file
-    start ven_keymaster-3-0
-    start ven_gatekeeper-1-0
-    start sys_servicemanager
+# One shot invocation to encrypt unencrypted volumes
+on encrypt
+    onrestart restart zygote
+    exec - root -- /sbin/vdc --wait cryptfs enablecrypto inplace default noui
+    # vold will set vold.decrypt to trigger_restart_framework (default
+    # encryption)
 
-on late-fs
-    exec_start wait_for_keymaster
-
-on post-fs
-    start modulesdriver
+#on property:ro.crypto.type=file
+#    start ven_keymaster-3-0
+#    start ven_gatekeeper-1-0
+#    start sys_servicemanager
 
 service modulesdriver /sbin/modulesdriver.sh
     oneshot
@@ -95,15 +110,21 @@ service modulesdriver /sbin/modulesdriver.sh
     group root
     seclabel u:r:recovery:s0
 
-on init
-    start healthd
+service prepdecrypt /sbin/prepdecrypt.sh
+    oneshot
+    disabled
+    user root
+    seclabel u:r:recovery:s0
 
-    chown system root /proc/cpwcn/wdtirq	
-    chmod 766 /proc/cpwcn/wdtirq
+on init
+    # decrypt stuff (triggers crypto.ready)
+    start prepdecrypt
 
 on fs
     install_keyring
 
+on post-fs
+    start modulesdriver
     mkdir /data/misc/bluedroid 0770 bluetooth net_bt_stack
     mkdir /data/misc/bluetooth 0770 system system
 
@@ -135,6 +156,9 @@ on fs
     mkdir /mnt/vendor/productinfo/sensor_calibration_data 0770 system root
     mkdir /data/vendor/local/otpdata 0777 system root
 
+#on late-fs
+#    exec_start wait_for_keymaster
+
 on post-fs-data
     setprop fpga.target.enable 1
     setprop debug.delaytime.min 10
@@ -158,10 +182,6 @@ on post-fs-data
     insmod /lib/modules/sprdbt_tty.ko
     insmod /lib/modules/sprd_fm.ko
 
-ifeq ($(strip $(NEED_MAPGOO_FIREWALL)),true) 
-    mkdir /system/bin/firewall_script 0770 system system
-endif
-
 #modify permission for fm sys file
     chmod 666 /sys/class/QN8027/QN8027/power_state
     chmod 666 /sys/class/QN8027/QN8027/tunetoch
@@ -179,14 +199,9 @@ endif
     chmod 777 /dev/ttyS1	
     
     chmod 666 /sys/class/backlight/sprd_backlight/brightness
-	chmod 666 /sys/class/backlight/sprd_backlight/bl_power
-    
-# modify for AR navigation dynamic FPS    
-    chmod 777 /sys/devices/virtual/misc/sprd_image/AR_navi_ctl    
-    chmod 666 /sys/devices/virtual/QN8027/QN8027/speaker_en
+    chmod 666 /sys/class/backlight/sprd_backlight/bl_power
 
-on boot
-
+on boot   
 # block I/O vm.dirty parameters
     write /proc/sys/vm/dirty_background_bytes 4194304
     write /proc/sys/vm/dirty_bytes  52428800

@@ -1,4 +1,4 @@
-<manifest version="1.0" type="device">
+<manifest version="1.0" type="device" target-level="2">
     <hal format="hidl">
         <name>android.hardware.audio</name>
         <transport>hwbinder</transport>
@@ -196,10 +196,12 @@
         <interface>
             <name>IRadio</name>
             <instance>slot1</instance>
+            <instance>slot2</instance>
         </interface>
         <interface>
             <name>ISap</name>
             <instance>slot1</instance>
+            <instance>slot2</instance>
         </interface>
     </hal>
     <hal format="hidl">
@@ -209,6 +211,7 @@
         <interface>
             <name>IOemHook</name>
             <instance>slot1</instance>
+            <instance>slot2</instance>
         </interface>
     </hal>
     <hal format="hidl">
@@ -226,15 +229,6 @@
         <version>1.0</version>
         <interface>
             <name>ISensors</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
-    <hal format="hidl">
-        <name>android.hardware.sharebuffer</name>
-        <transport>hwbinder</transport>
-        <version>1.0</version>
-        <interface>
-            <name>IShareBuffer</name>
             <instance>default</instance>
         </interface>
     </hal>
@@ -302,15 +296,6 @@
         </interface>
     </hal>
     <hal format="hidl">
-        <name>vendor.sprd.hardware.face</name>
-        <transport>hwbinder</transport>
-        <version>1.0</version>
-        <interface>
-            <name>IFace</name>
-            <instance>default</instance>
-        </interface>
-    </hal>
-    <hal format="hidl">
         <name>vendor.sprd.hardware.gnss</name>
         <transport>hwbinder</transport>
         <version>1.0</version>
@@ -353,16 +338,7 @@
         <interface>
             <name>IExtRadio</name>
             <instance>slot1</instance>
-        </interface>
-    </hal>
-    <hal format="hidl">
-        <name>vendor.sprd.hardware.radio.flavor</name>
-        <transport>hwbinder</transport>
-        <version>1.0</version>
-        <interface>
-            <name>IFlvRadio</name>
-            <instance>divslot1</instance>
-            <instance>divslot2</instance>
+            <instance>slot2</instance>
         </interface>
     </hal>
     <hal format="hidl">
@@ -385,5 +361,6 @@
     </hal>
     <sepolicy>
         <version>27.0</version>
+        <version>28.0</version>
     </sepolicy>
 </manifest>

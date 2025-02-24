@@ -1,6 +1,7 @@
 service ven_rpmbserver /vendor/bin/rpmbserver -r /dev/block/mmcblk0rpmb
     class cali
-    class cali
     socket rpmbserver stream 0666 rpmbserver rpmbserver
+    setenv PATH /vendor/bin:/system/bin:/sbin
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/sbin
     group system root
     seclabel u:r:tee:s0

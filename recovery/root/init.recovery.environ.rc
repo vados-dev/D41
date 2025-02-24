@@ -1,7 +1,7 @@
 # set up the global environment
 on init
-    export PATH /sbin:/system/sbin:/system/bin:/vendor/bin:/system/bin/hw:/vendor/bin/hw:/vendor/xbin
-    export LD_LIBRARY_PATH /sbin:/system/lib64:/vendor/lib:/system/lib:/vendor/lib/hw:/system/lib/hw
+    export PATH /sbin:/system/sbin:/system/bin:/vendor/bin:/vendor/xbin:/busybox
+    export LD_LIBRARY_PATH /sbin:/system/lib64:/vendor/lib:/system/lib
     export ANDROID_BOOTLOGO 1
     export ANDROID_ROOT /system
     export ANDROID_ASSETS /system/app

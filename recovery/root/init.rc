@@ -3,6 +3,7 @@ import /init.recovery.logd.rc
 import /init.recovery.ldconfig.rc
 import /init.recovery.mksh.rc
 import /init.recovery.nano.rc
+import /vendor/etc/init/hw/init.${ro.hardware}.rc
 import /init.recovery.usb.rc
 import /init.recovery.service.rc
 import /init.recovery.vold_decrypt.rc
@@ -32,8 +33,8 @@ service set_permissive /sbin/permissive.sh
     seclabel u:r:recovery:s0
 
 on init
-#    export PATH /sbin:/system/bin:/vendor/bin
-#    export LD_LIBRARY_PATH /sbin
+    export PATH /sbin:/system/bin:/vendor/bin
+    export LD_LIBRARY_PATH /sbin
 
     export ANDROID_ROOT /system
     export ANDROID_DATA /data
@@ -42,15 +43,10 @@ on init
     loglevel 7
 
     symlink /system/etc /etc
-    symlink /system/vendor /vendor
-	
-    mkdir /storage
-    mkdir /storage/sdcard1
-    mkdir /external_sd
-#    mkdir /storage/sdcard0						  
+#    symlink /system/vendor /vendor
 #    symlink /storage/sdcard0 /mnt/sdcard
-    symlink /external_sd /mnt/sdcard
     symlink /external_sd /storage/sdcard0
+    symlink /external_sd /mnt/sdcard
     symlink /system/etc/bluetooth /etc/bluetooth
 
     mkdir /sdcard
@@ -67,6 +63,11 @@ on init
     mkdir /systeminfo 0777 system system
 
 #add for sdcard path as same as android @{
+    mkdir /storage
+    mkdir /storage/sdcard1
+    mkdir /storage/sdcard0
+    mkdir /external_sd
+#@}
     chown root shell /tmp
     chmod 0775 /tmp
 
@@ -96,6 +97,15 @@ on init
     # checker programs.
     mkdir /dev/fscklogs 0770 root system
 
+    # pstore/ramoops previous console log
+    mount pstore pstore /sys/fs/pstore
+    chown system log /sys/fs/pstore/console-ramoops
+    chmod 0440 /sys/fs/pstore/console-ramoops
+    chown system log /sys/fs/pstore/console-ramoops-0
+    chmod 0440 /sys/fs/pstore/console-ramoops-0
+    chown system log /sys/fs/pstore/pmsg-ramoops-0
+    chmod 0440 /sys/fs/pstore/pmsg-ramoops-0
+
     # enable armv8_deprecated instruction hooks
     write /proc/sys/abi/swp 1
 
@@ -123,13 +133,9 @@ on load_persist_props_action
     start logd
     start logd-reinit
 
-#on property:vold_decrypt.symlinked_vendor=1
-#    start vold
-#    installkey /data
-
 # Indicate to fw loaders that the relevant mounts are up.
-on firmware_mounts_complete
-    rm /dev/.booting
+#on firmware_mounts_complete
+#    rm /dev/.booting
 
 # Mount filesystems and start core system services.
 on late-init
@@ -168,24 +174,13 @@ on late-init
     trigger early-boot
     trigger boot
 
-on fs
-    # pstore/ramoops previous console log
-    mount pstore pstore /sys/fs/pstore
-    chown system log /sys/fs/pstore/console-ramoops
-    chmod 0440 /sys/fs/pstore/console-ramoops
-    chown system log /sys/fs/pstore/console-ramoops-0
-    chmod 0440 /sys/fs/pstore/console-ramoops-0
-    chown system log /sys/fs/pstore/pmsg-ramoops-0
-    chmod 0440 /sys/fs/pstore/pmsg-ramoops-0
-
 on post-fs
     load_system_props
 #    mount_all /etc/recovery.vendor.fstab
-	
     # start essential services
     start logd
-    start sys_servicemanager
-    start sys_hwservicemanager
+    start servicemanager
+    start hwservicemanager
     start vndservicemanager
 
     # once everything is setup, no need to modify /
@@ -244,6 +239,164 @@ on late-fs
     # HALs required before storage encryption can get unlocked (FBE/FDE)
     class_start early_hal
 
+on post-fs-data
+    # We chown/chmod /data again so because mount is run as root + defaults
+    chown system system /data
+    chmod 0771 /data
+    # We restorecon /data in case the userdata partition has been reset.
+    restorecon /data
+
+    # Make sure we have the device encryption key.
+    start vold
+    installkey /data
+
+    # Start bootcharting as soon as possible after the data partition is
+    # mounted to collect more data.
+    mkdir /data/bootchart 0755 shell shell
+    bootchart start
+
+    # Avoid predictable entropy pool. Carry over entropy from previous boot.
+    copy /data/system/entropy.dat /dev/urandom
+
+    # create basic filesystem structure
+    mkdir /data/misc 01771 system misc
+    mkdir /data/misc/recovery 0770 system log
+    copy /data/misc/recovery/ro.build.fingerprint /data/misc/recovery/ro.build.fingerprint.1
+    chmod 0440 /data/misc/recovery/ro.build.fingerprint.1
+    chown system log /data/misc/recovery/ro.build.fingerprint.1
+    write /data/misc/recovery/ro.build.fingerprint ${ro.build.fingerprint}
+    chmod 0440 /data/misc/recovery/ro.build.fingerprint
+    chown system log /data/misc/recovery/ro.build.fingerprint
+    mkdir /data/misc/recovery/proc 0770 system log
+    copy /data/misc/recovery/proc/version /data/misc/recovery/proc/version.1
+    chmod 0440 /data/misc/recovery/proc/version.1
+    chown system log /data/misc/recovery/proc/version.1
+    copy /proc/version /data/misc/recovery/proc/version
+    chmod 0440 /data/misc/recovery/proc/version
+    chown system log /data/misc/recovery/proc/version
+    mkdir /data/misc/bluedroid 02770 bluetooth bluetooth
+    # Fix the access permissions and group ownership for 'bt_config.conf'
+    chmod 0660 /data/misc/bluedroid/bt_config.conf
+    chown bluetooth bluetooth /data/misc/bluedroid/bt_config.conf
+    mkdir /data/misc/bluetooth 0770 bluetooth bluetooth
+    mkdir /data/misc/bluetooth/logs 0770 bluetooth bluetooth
+    mkdir /data/misc/keystore 0700 keystore keystore
+    mkdir /data/misc/gatekeeper 0700 system system
+    mkdir /data/misc/keychain 0771 system system
+    mkdir /data/misc/net 0750 root shell
+    mkdir /data/misc/radio 0770 system radio
+    mkdir /data/misc/sms 0770 system radio
+    mkdir /data/misc/zoneinfo 0775 system system
+    mkdir /data/misc/textclassifier 0771 system system
+    mkdir /data/misc/vpn 0770 system vpn
+    mkdir /data/misc/shared_relro 0771 shared_relro shared_relro
+    mkdir /data/misc/systemkeys 0700 system system
+    mkdir /data/misc/wifi 0770 wifi wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/wifi/wpa_supplicant 0770 wifi wifi
+    mkdir /data/misc/ethernet 0770 system system
+    mkdir /data/misc/dhcp 0770 dhcp dhcp
+    mkdir /data/misc/user 0771 root root
+    mkdir /data/misc/perfprofd 0775 root root
+    # give system access to wpa_supplicant.conf for backup and restore
+    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
+    mkdir /data/local 0751 root root
+    mkdir /data/misc/media 0700 media media
+    mkdir /data/misc/audioserver 0700 audioserver audioserver
+    mkdir /data/misc/cameraserver 0700 cameraserver cameraserver
+    mkdir /data/misc/vold 0700 root root
+    mkdir /data/misc/boottrace 0771 system shell
+    mkdir /data/misc/update_engine 0700 root root
+    mkdir /data/misc/trace 0700 root root
+    mkdir /data/misc/reboot 0700 system system
+    # profile file layout
+    mkdir /data/misc/profiles 0771 system system
+    mkdir /data/misc/profiles/cur 0771 system system
+    mkdir /data/misc/profiles/ref 0771 system system
+    mkdir /data/misc/profman 0770 system shell
+    mkdir /data/misc/gcov 0770 root root
+
+    mkdir /data/vendor 0771 root root
+    mkdir /data/vendor/hardware 0771 root root
+
+    # For security reasons, /data/local/tmp should always be empty.
+    # Do not place files or directories in /data/local/tmp
+    mkdir /data/local/tmp 0771 shell shell
+    mkdir /data/data 0771 system system
+    mkdir /data/app-private 0771 system system
+    mkdir /data/app-ephemeral 0771 system system
+    mkdir /data/app-asec 0700 root root
+    mkdir /data/app-lib 0771 system system
+    mkdir /data/app 0771 system system
+    mkdir /data/property 0700 root root
+    mkdir /data/tombstones 0771 system system
+
+    # create dalvik-cache, so as to enforce our permissions
+    mkdir /data/dalvik-cache 0771 root root
+    # create the A/B OTA directory, so as to enforce our permissions
+    mkdir /data/ota 0771 root root
+
+    # create the OTA package directory. It will be accessed by GmsCore (cache
+    # group), update_engine and update_verifier.
+    mkdir /data/ota_package 0770 system cache
+
+    # create resource-cache and double-check the perms
+    mkdir /data/resource-cache 0771 system system
+    chown system system /data/resource-cache
+    chmod 0771 /data/resource-cache
+
+    # create the lost+found directories, so as to enforce our permissions
+    mkdir /data/lost+found 0770 root root
+
+    # create directory for DRM plug-ins - give drm the read/write access to
+    # the following directory.
+    mkdir /data/drm 0770 drm drm
+
+    # create directory for MediaDrm plug-ins - give drm the read/write access to
+    # the following directory.
+    mkdir /data/mediadrm 0770 mediadrm mediadrm
+
+    mkdir /data/anr 0775 system system
+
+    # Create all remaining /data root dirs so that they are made through init
+    # and get proper encryption policy installed
+    mkdir /data/backup 0700 system system
+    mkdir /data/ss 0700 system system
+
+    mkdir /data/system 0775 system system
+    mkdir /data/system/heapdump 0700 system system
+    mkdir /data/system/users 0775 system system
+
+    mkdir /data/system_de 0770 system system
+    mkdir /data/system_ce 0770 system system
+
+    mkdir /data/misc_de 01771 system misc
+    mkdir /data/misc_ce 01771 system misc
+
+    mkdir /data/user 0711 system system
+    mkdir /data/user_de 0711 system system
+    symlink /data/data /data/user/0
+
+    mkdir /data/media 0770 media_rw media_rw
+    mkdir /data/media/obb 0770 media_rw media_rw
+
+    mkdir /data/cache 0770 system cache
+    mkdir /data/cache/recovery 0770 system cache
+    mkdir /data/cache/backup_stage 0700 system system
+    mkdir /data/cache/backup 0700 system system
+
+    # Set SELinux security contexts on upgrade or policy update.
+    restorecon --recursive --skip-ce /data
+
+    # Check any timezone data in /data is newer than the copy in /system, delete if not.
+    exec - system system -- /system/bin/tzdatacheck /system/usr/share/zoneinfo /data/misc/zoneinfo
+
+    # If there is no post-fs-data action in the init.<device>.rc file, you
+    # must uncomment this line, otherwise encrypted filesystems
+    # won't work.
+    # Set indication (checked by vold) that we have finished this action
+    #setprop vold.post_fs_data_done 1
+
 # It is recommended to put unnecessary data/ initialization from post-fs-data
 # to start-zygote in device's init.rc to unblock zygote start.
 on zygote-start && property:ro.crypto.state=unencrypted
@@ -266,23 +419,6 @@ on zygote-start && property:ro.crypto.state=encrypted && property:ro.crypto.type
     start netd
     start zygote
     start zygote_secondary
-
-on post-fs-data
-    # We chown/chmod /data again so because mount is run as root + defaults
-    chown system system /data
-    chmod 0771 /data
-    # We restorecon /data in case the userdata partition has been reset.
-#    restorecon /data
-
-    # Make sure we have the device encryption key.
-    start vold
-    installkey /data
-
-    # Set SELinux security contexts on upgrade or policy update.
-    restorecon --recursive --skip-ce /data
-
-    # Check any timezone data in /data is newer than the copy in /system, delete if not.
-    exec - system system -- /system/bin/tzdatacheck /system/usr/share/zoneinfo /data/misc/zoneinfo
 
 on boot
     ifup lo

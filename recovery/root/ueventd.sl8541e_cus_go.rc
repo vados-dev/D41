@@ -1,3 +1,5 @@
+firmware_directories /sys/ /sys/firmware/ /proc/device-tree/firmware/ /vendor/firmware/ /firmware/image/ /etc/firmware/ /odm/firmware/
+#uevent_socket_rcvbuf_size 16M
 /dev/sttygnss0          0660     system      system
 /dev/spipe_gnss0        0660     system      system
 /dev/spipe_gnss1        0660     system      system

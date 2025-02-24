@@ -8,19 +8,21 @@
 PRODUCT_RELEASE_NAME := Eplutus D41
 
 # Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
-#$(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/go_defaults.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/embedded.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
+#$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
+#$(call inherit-product, $(SRC_TARGET_DIR)/product/treble_common.mk)
+#$(call inherit-product, $(SRC_TARGET_DIR)/product/embedded.mk)
+#$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 #$(call inherit-product-if-exists, $(SRC_TARGET_DIR)/product/languages_full.mk)
+
+$(call inherit-product, device/sprd/D41/go_defaults_common.mk)
 
 # Inherit some common Omni stuff.
 #$(call inherit-product, vendor/omni/config/common.mk)
 $(call inherit-product, vendor/pb/config/common.mk)
 
 # Inherit from sp9832e_1h10_go device
-$(call inherit-product, device/sprd/D41/device.mk)
+#$(call inherit-product, device/sprd/D41/device.mk)
 
 # Platform
 TARGET_BOARD_PLATFORM := sp9832e
@@ -39,4 +41,10 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     PRIVATE_BUILD_DESC="sp9832e_1h10_native-user 8.1.0 OPM2.171019.012 52215 release-keys"
 
 BUILD_FINGERPRINT := SPRD/sp9832e_1h10_native/sp9832e_1h10:8.1.0/OPM2.171019.012/52215:user/release-keys
-PLATFORM_SECURITY_PATCH := 2018-09-05
+#PLATFORM_SECURITY_PATCH := 2018-09-05
+PLATFORM_SECURITY_PATCH := 2025-12-31
+
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+    ro.secure=1 \
+    ro.adb.secure=0 \
+    ro.vendor.build.security_patch=2025-12-31
