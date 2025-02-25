@@ -9,8 +9,9 @@ on property:sprd.tsupplicant.enabled=1
 
 service tsupplicant /vendor/bin/tsupplicant firmware
     class core
-    user system
-    group system
+    user root
+    group root
+    seclabel u:r:recovery:s0
 
 service tsupplicant-cali /vendor/bin/tsupplicant firmware
     class cali

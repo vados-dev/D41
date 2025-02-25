@@ -5,7 +5,8 @@ import /init.recovery.zygote32.rc
 import /vendor/etc/init/android.hardware.gatekeeper@1.0-service.rc
 import /vendor/etc/init/android.hardware.keymaster@3.0-service.rc
 #import /vendor/etc/init/rpmbserver_androido.rc
-#import /vendor/etc/init/storageproxyd_androidone.rc
+import /vendor/etc/init/tsupplicant.rc
+import /vendor/etc/init/storageproxyd_androidone.rc
 import /vendor/etc/init/vndservicemanager.rc
 
 #on property:sys.usb.config=fastboot
@@ -13,7 +14,7 @@ import /vendor/etc/init/vndservicemanager.rc
 #    start hwservicemanager
 #    restart fastbootd
 
-on property:vendor.sprd.tsupplicant.enabled=1
+on property:sprd.tsupplicant.enabled=1
     start tsupplicant
 
 service gatekeeperd /sbin/gatekeeperd /data/misc/gatekeeper
