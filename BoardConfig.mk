@@ -238,7 +238,7 @@ TW_CUSTOM_POWER_BUTTON := 116
 #TW_FORCE_CPUINFO_FOR_DEVICE_ID := true
 #TW_OVERRIDE_SYSTEM_PROPS := "ro.build.fingerprint"
 # See here : https://github.com/omnirom/android_b...ndroid.mk#L435
-#TARGET_RECOVERY_DEVICE_MODULES += tzdata
+TARGET_RECOVERY_DEVICE_MODULES += tzdata
 #TARGET_RECOVERY_DEVICE_MODULES += vndservicemanager
 #TARGET_RECOVERY_DEVICE_MODULES += rpmbserver
 #TARGET_RECOVERY_DEVICE_MODULES += storageproxyd
@@ -252,10 +252,10 @@ RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/strace
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/vndservicemanager
 #TW_NO_HAPTICS := true
 #TW_USE_LEDS_HAPTICS := true
-#TW_LOAD_VENDOR_FIRMWARE := "sf_trusty.elf"
+TW_LOAD_VENDOR_FIRMWARE := "sf_trusty.elf"
 
 # Libresetprop & resetprop
-#TW_INCLUDE_LIBRESETPROP := true
+TW_INCLUDE_LIBRESETPROP := true
 TW_INCLUDE_RESETPROP := true
 TW_INCLUDE_REPACKTOOLS := true
 

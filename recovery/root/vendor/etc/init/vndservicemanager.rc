@@ -6,4 +6,4 @@ service vndservicemanager /vendor/bin/vndservicemanager /dev/vndbinder
     setenv LD_LIBRARY_PATH /vendor/lib
     writepid /dev/cpuset/system-background/tasks
     shutdown critical
-    seclabel u:r:vold:s0
+    seclabel u:r:recovery:s0

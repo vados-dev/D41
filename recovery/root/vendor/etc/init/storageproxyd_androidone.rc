@@ -15,14 +15,14 @@ on property:sprd.storageproxyd.enabled=1
 #service name must be < 16
 service rpmbproxyd /vendor/bin/sprdstorageproxyd -f rpmb -d /dev/trusty-ipc-dev0 -p /data/sprd_ss -r /dev/block/mmcblk0rpmb
     class core
-    group system
+    group root system
     setenv PATH /vendor/bin:/system/bin:/sbin
     setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/sbin
-    seclabel u:r:tee:s0
+    seclabel u:r:recovery:s0
 
 service storagensproxyd /vendor/bin/sprdstorageproxyd -f ns -d /dev/trusty-ipc-dev0 -p /data/sprd_ss -r /dev/block/mmcblk0rpmb
     class late_start
-    group system
+    group root system 
     setenv PATH /vendor/bin:/system/bin:/sbin
     setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/sbin
-    seclabel u:r:tee:s0
+    seclabel u:r:recovery:s0
