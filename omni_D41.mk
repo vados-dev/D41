@@ -22,7 +22,7 @@ $(call inherit-product, device/sprd/D41/go_defaults_common.mk)
 $(call inherit-product, vendor/pb/config/common.mk)
 
 # Inherit from sp9832e_1h10_go device
-#$(call inherit-product, device/sprd/D41/device.mk)
+$(call inherit-product, device/sprd/D41/device.mk)
 
 # Platform
 TARGET_BOARD_PLATFORM := sp9832e
@@ -30,7 +30,7 @@ TARGET_BOARD_PLATFORM := sp9832e
 PRODUCT_DEVICE := D41
 PRODUCT_NAME := omni_D41
 PRODUCT_BRAND := SPRD
-PRODUCT_MODEL := sl8541e_cus_gofu
+PRODUCT_MODEL := sl8541e_cus_go
 PRODUCT_MANUFACTURER := sprd
 
 PRODUCT_GMS_CLIENTID_BASE := android-sprd
@@ -41,10 +41,11 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     PRIVATE_BUILD_DESC="sp9832e_1h10_native-user 8.1.0 OPM2.171019.012 52215 release-keys"
 
 BUILD_FINGERPRINT := SPRD/sp9832e_1h10_native/sp9832e_1h10:8.1.0/OPM2.171019.012/52215:user/release-keys
-#PLATFORM_SECURITY_PATCH := 2018-09-05
-PLATFORM_SECURITY_PATCH := 2025-12-31
+PLATFORM_SECURITY_PATCH := 2018-09-05
+#PLATFORM_SECURITY_PATCH := 2025-12-31
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.secure=1 \
     ro.adb.secure=0 \
-    ro.vendor.build.security_patch=2025-12-31
+    ro.vendor.build.security_patch=2018-09-05
+#    ro.vendor.build.security_patch=2025-12-31

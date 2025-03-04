@@ -32,9 +32,9 @@ while [ ! -e "$syspath" ];do
     [ "$syspath" == "undefined" ] && F_LOG "sleeping a bit as syspath is not there yet.." && sleep 1
 done
 
-F_LOG "$(echo "Prepare and mount:"; \
-mkdir /s >> $LOG 2>&1 || F_ELOG 'mkdir /s failed'; \
-mount -t ext4 -o ro '$syspath' /s  >> $LOG 2>&1 || F_ELOG 'mounting /s to $syspath failed')"
+F_LOG "$(echo "Prepare and mount:")"
+mkdir /s >> $LOG 2>&1 || F_ELOG "mkdir /s failed"
+mount -t ext4 -o ro $syspath /s  >> $LOG 2>&1 || F_ELOG "mounting /s to $syspath failed"
 
 F_LOG "$(echo "LS Dirs:"; \
 ls -la / 2>&1 ; \ 

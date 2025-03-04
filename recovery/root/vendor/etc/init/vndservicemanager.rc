@@ -1,9 +1,9 @@
 service vndservicemanager /vendor/bin/vndservicemanager /dev/vndbinder
     class core
     user root
-    group root readproc
-    setenv PATH /vendor/bin:
-    setenv LD_LIBRARY_PATH /vendor/lib
+    group root system readproc
+    setenv PATH /vendor/bin:/system/bin
+    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib
 #    writepid /dev/cpuset/system-background/tasks
     shutdown critical
     seclabel u:r:recovery:s0

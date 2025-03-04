@@ -7,8 +7,8 @@
 
 LOCAL_PATH := device/sprd/D41
 
-#PRODUCT_COPY_FILES := \
-#    frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml
+PRODUCT_COPY_FILES := \
+    frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml
 
 # Split selinux policy
 PRODUCT_FULL_TREBLE_OVERRIDE := true
@@ -19,8 +19,8 @@ PRODUCT_COPY_FILES += \
     build/make/target/product/vndk/init.vndk-27.rc:system/etc/init/gsi/init.vndk-27.rc
 
 # Name space configuration file for non-enforcing VNDK
-PRODUCT_PACKAGES += \
-    ld.config.vndk_lite.txt
+#PRODUCT_PACKAGES += \
+#    ld.config.vndk_lite.txt
 
 # Support addtional O-MR1 vendor interface
 PRODUCT_EXTRA_VNDK_VERSIONS := 27
@@ -61,10 +61,10 @@ PRODUCT_EXTRA_VNDK_VERSIONS := 27
 
 # Keymaster HAL
 #PRODUCT_PACKAGES += \
+#    libsoftkeymasterdevice \
 #    wait_for_keymaster
 #    android.hardware.keymaster@3.0-unisoc.service \
 #    libkeymaster3 \
-#    libsoftkeymasterdevice \
 #    libpuresoftkeymasterdevice
 
 
@@ -86,12 +86,12 @@ PRODUCT_EXTRA_VNDK_VERSIONS := 27
 #    libdiskconfig \
 #    libteeproduction
 
-PRODUCT_PACKAGES += \
-    sprdstorageproxyd \
+#PRODUCT_PACKAGES += \
+#    sprdstorageproxyd \
 #    rpmbserver \
-    uncrypt \
-    vold \
-    vdc
+#    uncrypt \
+#    vold \
+#    vdc
 
 #ifneq ($(BOARD_TEE_LOW_MEM),true)
 #PRODUCT_PACKAGES += \

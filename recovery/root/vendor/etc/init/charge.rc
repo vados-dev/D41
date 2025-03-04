@@ -2,3 +2,5 @@ service charge /vendor/bin/charge
     class charger
     user root
     oneshot
+    disabled
+    seclabel u:r:recovery:s0
