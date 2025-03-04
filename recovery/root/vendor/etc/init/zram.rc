@@ -1,3 +1,4 @@
-service zram /vendor/bin/zram.sh
+service ven_zram /vendor/bin/zram.sh
     disabled
     oneshot
+    seclabel u:r:recovery:s0

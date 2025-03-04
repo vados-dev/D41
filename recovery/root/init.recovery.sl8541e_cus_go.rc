@@ -1,6 +1,7 @@
 import /init.recovery.environ.rc
 import /init.recovery.common.rc
 import /init.recovery.cali.rc
+import /vendor/etc/init/zram.rc
 import /init.recovery.zygote32.rc
 import /vendor/etc/init/android.hardware.gatekeeper@1.0-service.rc
 import /vendor/etc/init/android.hardware.keymaster@3.0-service.rc
@@ -17,30 +18,32 @@ import /vendor/etc/init/vndservicemanager.rc
 on property:sprd.tsupplicant.enabled=1
     start tsupplicant
 
-service gatekeeperd /sbin/gatekeeperd /data/misc/gatekeeper
+service gatekeeperd /system/bin/gatekeeperd /data/misc/gatekeeper
     class late_start
-    user system
-    writepid /dev/cpuset/system-background/tasks
+    user root
+    setenv PATH /system/bin
+    setenv LD_LIBRARY_PATH /system/lib
+#    writepid /dev/cpuset/system-background/tasks
     seclabel u:r:recovery:s0
 
 service keystore_auth /sbin/keystore_auth
     oneshot
-    user system
+    user root
     group root
     disabled
     seclabel u:r:recovery:s0
 
 # keystore is started and stopped on demand by TWRP
-service keystore /sbin/keystore /tmp/misc/keystore
+service keystore /system/bin/keystore /tmp/misc/keystore
     user root
     group root drmrpc readproc
     disabled
     seclabel u:r:recovery:s0
 
-service hwservicemanager /sbin/hwservicemanager
+service hwservicemanager /system/bin/hwservicemanager
     user root
-    setenv PATH /sbin:/system/bin
-    setenv LD_LIBRARY_PATH /sbin:/system/lib
+    setenv PATH /system/bin
+    setenv LD_LIBRARY_PATH /system/lib
     disabled
     group root readproc
     onrestart setprop hwservicemanager.ready false
@@ -49,9 +52,11 @@ service hwservicemanager /sbin/hwservicemanager
     shutdown critical
     seclabel u:r:recovery:s0
 
-service servicemanager /sbin/servicemanager
+service servicemanager /system/bin/servicemanager
     user root
     group root readproc
+    setenv PATH /system/bin
+    setenv LD_LIBRARY_PATH /system/lib
     disabled
     seclabel u:r:recovery:s0
 
@@ -63,16 +68,16 @@ service wait_for_keymaster /sbin/wait_for_keymaster
     oneshot
     seclabel u:r:recovery:s0
 
-service vold /sbin/vold \
+service vold /system/bin/vold \
         --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \
         --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0
-    class core
     socket vold stream 0660 root mount
     socket cryptd stream 0660 root mount
     ioprio be 2
-    writepid /dev/cpuset/foreground/tasks
-    setenv PATH /sbin:/system/bin
-    setenv LD_LIBRARY_PATH /sbin:/system/lib
+#    writepid /dev/cpuset/foreground/tasks
+    setenv PATH /system/bin
+    setenv LD_LIBRARY_PATH /system/lib
+    disabled
     shutdown critical
     seclabel u:r:recovery:s0
 

@@ -86,12 +86,12 @@ PRODUCT_EXTRA_VNDK_VERSIONS := 27
 #    libdiskconfig \
 #    libteeproduction
 
-#PRODUCT_PACKAGES += \
-#    sprdstorageproxyd \
+PRODUCT_PACKAGES += \
+    sprdstorageproxyd \
 #    rpmbserver \
-#    uncrypt \
-#    vold \
-#    vdc
+    uncrypt \
+    vold \
+    vdc
 
 #ifneq ($(BOARD_TEE_LOW_MEM),true)
 #PRODUCT_PACKAGES += \

@@ -32,9 +32,9 @@ while [ ! -e "$syspath" ];do
     [ "$syspath" == "undefined" ] && F_LOG "sleeping a bit as syspath is not there yet.." && sleep 1
 done
 
-# prepare and mount
-mkdir /s >> $LOG 2>&1 
-mount -t ext4 -o ro "$syspath" /s  >> $LOG 2>&1 || F_ELOG "mounting /s to $syspath failed"
+F_LOG "$(echo "Prepare and mount:"; \
+mkdir /s >> $LOG 2>&1 || F_ELOG 'mkdir /s failed'; \
+mount -t ext4 -o ro '$syspath' /s  >> $LOG 2>&1 || F_ELOG 'mounting /s to $syspath failed')"
 
 F_LOG "$(echo "LS Dirs:"; \
 ls -la / 2>&1 ; \ 
@@ -42,9 +42,7 @@ ls -la /s/ 2>&1 ; \
 ls -la /dev/block/ 2>&1 ; \ 
 ls -la /dev/block/platform/ 2>&1 ; \ 
 ls -la /dev/block/platform/soc/ 2>&1 ; \ 
-ls -la /dev/block/platform/ 2>&1 ; \ 
-
-exit 1
+ls -la /dev/block/platform/ 2>&1)"  
 
 # directories
 F_LOG "$(echo "Preparing directories:"; \
@@ -53,6 +51,8 @@ mkdir -p /system/etc 2>&1 ; \
 mkdir -p /vendor/lib/hw/ 2>&1 ; \
 mkdir /persist-lg 2>&1 ; \ 
 mkdir /firmware 2>&1)"
+
+exit 1
 
 # this relinks (linker) AND copies qseecomd to /sbin
 if [ -f /s/vendor/bin/qseecomd ];then

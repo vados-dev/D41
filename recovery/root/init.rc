@@ -1,13 +1,13 @@
 import /init.recovery.environ.rc
 import /init.recovery.logd.rc
+import /init.recovery.usb.rc
+import /init.recovery.${ro.hardware}.rc															   
 import /init.recovery.ldconfig.rc
 import /init.recovery.mksh.rc
 import /init.recovery.nano.rc
 import /vendor/etc/init/hw/init.${ro.hardware}.rc
-import /init.recovery.usb.rc
 import /init.recovery.service.rc
 import /init.recovery.vold_decrypt.rc
-import /init.recovery.${ro.hardware}.rc
 import /init.recovery.${ro.zygote}.rc
 
 on early-init
@@ -18,12 +18,32 @@ on early-init
     # This should occur before anything else (e.g. ueventd) is started.
     setcon u:r:init:s0
 
+    # Set init and its forked children's oom_adj.
+    write /proc/1/oom_score_adj -1000
+
+    # Disable sysrq from keyboard
+    write /proc/sys/kernel/sysrq 0
+
+    # Set the security context of /adb_keys if present.
+    restorecon /adb_keys
+
+	# Shouldn't be necessary, but sdcard won't start without it. http://b/22568628.
+    mkdir /mnt 0775 root system
+
     # Set the security context of /postinstall if present.
     restorecon /postinstall
 
     # ueventd wants to write to /acct
     mount cgroup none /acct cpuacct
     mkdir /acct/uid
+
+    # root memory control cgroup, used by lmkd
+    mkdir /dev/memcg 0700 root system
+    mount cgroup none /dev/memcg memory
+    # app mem cgroups, used by activity manager, lmkd and zygote
+    mkdir /dev/memcg/apps/ 0755 system system
+    # cgroup for system_server and surfaceflinger
+    mkdir /dev/memcg/system 0550 system system
 
     start ueventd
 #    start healthd
@@ -33,6 +53,13 @@ service set_permissive /sbin/permissive.sh
     seclabel u:r:recovery:s0
 
 on init
+    sysclktz 0
+    # Mix device-specific information into the entropy pool
+    copy /proc/cmdline /dev/urandom
+#    copy /default.prop /dev/urandom    # Backward compatibility.
+    symlink /system/etc /etc
+    symlink /sys/kernel/debug /d
+										
     export PATH /sbin:/system/bin:/vendor/bin
     export LD_LIBRARY_PATH /sbin
 
@@ -55,7 +82,35 @@ on init
     mkdir /qcdata
     mkdir /cache
     mkdir /sideload
-    mount tmpfs tmpfs /tmp
+#    mount tmpfs tmpfs /tmp
+
+    # Mount staging areas for devices managed by vold
+    # See storage config details at http://source.android.com/tech/storage/
+    mount tmpfs tmpfs /mnt mode=0755,uid=0,gid=1000
+    restorecon_recursive /mnt
+	mount configfs none /config
+    chmod 0775 /config/sdcardfs
+    chown system package_info /config/sdcardfs
+
+    mkdir /mnt/secure 0700 root root
+    mkdir /mnt/secure/asec 0700 root root
+    mkdir /mnt/asec 0755 root system
+    mkdir /mnt/obb 0755 root system
+    mkdir /mnt/media_rw 0750 root media_rw
+    mkdir /mnt/user 0755 root root
+    mkdir /mnt/user/0 0755 root root
+    mkdir /mnt/expand 0771 system system
+    mkdir /mnt/appfuse 0711 root root
+
+    # Storage views to support runtime permissions
+    mkdir /mnt/runtime 0700 root root
+    mkdir /mnt/runtime/default 0755 root root
+    mkdir /mnt/runtime/default/self 0755 root root
+    mkdir /mnt/runtime/read 0755 root root
+    mkdir /mnt/runtime/read/self 0755 root root
+    mkdir /mnt/runtime/write 0755 root root
+    mkdir /mnt/runtime/write/self 0755 root root
+	
     mount cgroup none /acct cpuacct
     mkdir /acct/uid
     chmod root shell /tmp
@@ -71,8 +126,56 @@ on init
     chown root shell /tmp
     chmod 0775 /tmp
 
+    # Symlink to keep legacy apps working in multi-user world
+    symlink /storage/self/primary /sdcard
+    symlink /storage/self/primary /mnt/sdcard
+    symlink /mnt/user/0/primary /mnt/runtime/default/self/primary
+
     write /proc/sys/kernel/panic_on_oops 1
-    write /proc/sys/vm/max_map_count 1000000
+    write /proc/sys/kernel/hung_task_timeout_secs 0
+    write /proc/cpu/alignment 4										
+
+
+    # sets up initial cpusets for ActivityManager
+    mkdir /dev/cpuset
+    mount cpuset none /dev/cpuset
+
+    # this ensures that the cpusets are present and usable, but the device's
+    # init.rc must actually set the correct cpus
+    mkdir /dev/cpuset/foreground
+    copy /dev/cpuset/cpus /dev/cpuset/foreground/cpus
+    copy /dev/cpuset/mems /dev/cpuset/foreground/mems
+    mkdir /dev/cpuset/foreground/boost
+    copy /dev/cpuset/cpus /dev/cpuset/foreground/boost/cpus
+    copy /dev/cpuset/mems /dev/cpuset/foreground/boost/mems
+    mkdir /dev/cpuset/background
+    copy /dev/cpuset/cpus /dev/cpuset/background/cpus
+    copy /dev/cpuset/mems /dev/cpuset/background/mems
+
+    # system-background is for system tasks that should only run on
+    # little cores, not on bigs
+    # to be used only by init, so don't change system-bg permissions
+    mkdir /dev/cpuset/system-background
+    copy /dev/cpuset/cpus /dev/cpuset/system-background/cpus
+    copy /dev/cpuset/mems /dev/cpuset/system-background/mems
+
+    mkdir /dev/cpuset/top-app
+    copy /dev/cpuset/cpus /dev/cpuset/top-app/cpus
+    copy /dev/cpuset/mems /dev/cpuset/top-app/mems
+
+    # change permissions for all cpusets we'll touch at runtime
+    chown system system /dev/cpuset
+    chown system system /dev/cpuset/foreground
+    chown system system /dev/cpuset/foreground/boost
+    chown system system /dev/cpuset/background
+    chown system system /dev/cpuset/system-background
+    chown system system /dev/cpuset/top-app
+    chown system system /dev/cpuset/tasks
+    chown system system /dev/cpuset/foreground/tasks
+    chown system system /dev/cpuset/foreground/boost/tasks
+    chown system system /dev/cpuset/background/tasks
+    chown system system /dev/cpuset/system-background/tasks
+    chown system system /dev/cpuset/top-app/tasks
 
     # set system-background to 0775 so SurfaceFlinger can touch it
     chmod 0775 /dev/cpuset/system-background
@@ -134,8 +237,8 @@ on load_persist_props_action
     start logd-reinit
 
 # Indicate to fw loaders that the relevant mounts are up.
-#on firmware_mounts_complete
-#    rm /dev/.booting
+on firmware_mounts_complete
+    rm /dev/.booting
 
 # Mount filesystems and start core system services.
 on late-init
@@ -158,12 +261,12 @@ on late-init
     trigger zygote-start
 
     # Load properties, pre-Android 6.0
-    trigger load_all_props_action
+#    trigger load_all_props_action
 
     # Load properties from /system/ + /factory after fs mount. Place
     # this in another action so that the load will be scheduled after the prior
     # issued fs triggers have completed.
-    trigger load_system_props_action
+#    trigger load_system_props_action
 
     # Load properties, Android 6.0+, vendor init lives here
     trigger load_persist_props_action
@@ -175,7 +278,10 @@ on late-init
     trigger boot
 
 on post-fs
-    load_system_props
+    # Load properties, pre-Android 6.0
+    trigger load_all_props_action
+	
+    trigger load_system_props_action
 #    mount_all /etc/recovery.vendor.fstab
     # start essential services
     start logd
@@ -194,6 +300,17 @@ on post-fs
     # Make sure /sys/kernel/debug (if present) is labeled properly
     # Note that tracefs may be mounted under debug, so we need to cross filesystems
     restorecon --recursive --cross-filesystems /sys/kernel/debug
+	
+	chown media_rw media_rw /qcdata
+    chmod 0777 /qcdata
+	
+	chown media_rw media_rw /qcdata/qc.prop
+	chmod 0777 /qcdata/qc.prop
+	chown media_rw media_rw /qcdata/activate
+	chmod 0777 /qcdata/activate
+	chown media_rw media_rw /qcdata/activate/value.dat
+	chmod 0777 /qcdata/activate/value.dat
+
     # We chown/chmod /cache again so because mount is run as root + defaults
     chown system cache /cache
     chmod 0770 /cache
@@ -507,8 +624,11 @@ on boot
     chown root radio /proc/cmdline
 
     setprop sys.usb.configfs 1
-    class_start default
+    # Start standard binderized HAL daemons
+    class_start hal
 
+    class_start core
+    class_start default
 on nonencrypted
     class_start main
     class_start late_start
@@ -565,11 +685,15 @@ on property:sys.powerctl=*
    powerctl ${sys.powerctl}
 
 service ueventd /sbin/ueventd
+    class core
     critical
     seclabel u:r:ueventd:s0
+	shutdown critical				 
 
 service healthd /sbin/healthd -r
+	class core
     critical
+    group root system wakelock
     seclabel u:r:healthd:s0
 
 service recovery /sbin/recovery
