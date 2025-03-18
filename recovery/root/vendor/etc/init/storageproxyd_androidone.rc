@@ -6,23 +6,26 @@ on post-fs-data
 on factorytest
     setprop sprd.storageproxyd.enabled 1
 
+on property:ro.bootmode=cali
+    setprop sprd.storageproxyd.enabled 1
+
 #on cali mode set sprd.storageproxyd.enabled=1 in production tools
 on property:sprd.storageproxyd.enabled=1
     mkdir /data/sprd_ss 0770 system system
-    start rpmbproxyd
-    start storagensproxyd
+    start vendor.rpmbproxyd
+    start vendor.storagensproxyd
 
 #service name must be < 16
-service rpmbproxyd /vendor/bin/sprdstorageproxyd -f rpmb -d /dev/trusty-ipc-dev0 -p /data/sprd_ss -r /dev/block/mmcblk0rpmb
+service vendor.rpmbproxyd /vendor/bin/sprdstorageproxyd -f rpmb -d /dev/trusty-ipc-dev0 -p /data/sprd_ss -r /dev/block/mmcblk0rpmb
     class core
     group root system
-    setenv PATH /vendor/bin:/system/bin:/sbin
-    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/sbin
-    seclabel u:r:recovery:s0
+    setenv PATH /vendor/bin:/vendor/bin/hw
+    setenv LD_LIBRARY_PATH /vendor/lib:/vendor/lib/hw
+    seclabel u:r:tee:s0
 
-service storagensproxyd /vendor/bin/sprdstorageproxyd -f ns -d /dev/trusty-ipc-dev0 -p /data/sprd_ss -r /dev/block/mmcblk0rpmb
+service vendor.storagensproxyd /vendor/bin/sprdstorageproxyd -f ns -d /dev/trusty-ipc-dev0 -p /data/sprd_ss -r /dev/block/mmcblk0rpmb
     class late_start
-    group root system 
-    setenv PATH /vendor/bin:/system/bin:/sbin
-    setenv LD_LIBRARY_PATH /vendor/lib:/system/lib:/sbin
-    seclabel u:r:recovery:s0
+    group root system
+    setenv PATH /vendor/bin:/vendor/bin/hw
+    setenv LD_LIBRARY_PATH /vendor/lib:/vendor/lib/hw
+    seclabel u:r:tee:s0

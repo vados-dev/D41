@@ -1,6 +1,8 @@
-service charge /vendor/bin/charge
+service vendor.charge /vendor/bin/charge
     class charger
     user root
     oneshot
+    setenv PATH /vendor/bin:/vendor/bin/hw
+    setenv LD_LIBRARY_PATH /vendor/lib:/vendor/lib/hw
     disabled
     seclabel u:r:recovery:s0

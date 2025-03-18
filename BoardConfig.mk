@@ -13,41 +13,42 @@ export LC_ALL=C
 #BUILD_BROKEN_DUP_RULES := true
 #BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
 
-# Architecture
-#TARGET_ARCH := arm64
-#TARGET_ARCH_VARIANT := armv8-a
-#TARGET_CPU_ABI := arm64-v8a
-#TARGET_CPU_ABI2 :=
-#TARGET_CPU_VARIANT := generic
+#BOARD_SEPOLICY_VERS := 27
 
-#TARGET_2ND_ARCH := arm
-#TARGET_2ND_ARCH_VARIANT := armv7-a-neon
-#TARGET_2ND_CPU_ABI := armeabi-v7a
-#TARGET_2ND_CPU_ABI2 := armeabi
-#TARGET_2ND_CPU_VARIANT := cortex-a53
-#TARGET_2ND_CPU_VARIANT_RUNTIME := generic
+# Architecture
+TARGET_ARCH := arm64
+TARGET_ARCH_VARIANT := armv8-a
+TARGET_CPU_ABI := arm64-v8a
+TARGET_CPU_ABI2 :=
+TARGET_CPU_VARIANT := cortex-a53
+
+TARGET_2ND_ARCH := arm
+TARGET_2ND_ARCH_VARIANT := armv7-a-neon
+TARGET_2ND_CPU_ABI := armeabi-v7a
+TARGET_2ND_CPU_ABI2 := armeabi
+TARGET_2ND_CPU_VARIANT := generic
+TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a53
 
 # HIDL
 #DEVICE_MANIFEST_FILE := $(DEVICE_PATH)/recovery/root/vendor/manifest.xml
 #DEVICE_MATRIX_FILE := $(DEVICE_PATH)/recovery/root/vendor/compatibility_matrix.xml
+PRODUCT_ENFORCE_VINTF_MANIFEST := true
 
-TARGET_ARCH := arm
-TARGET_ARCH_VARIANT := armv7-a-neon
-TARGET_CPU_ABI := armeabi-v7a
-TARGET_CPU_ABI2 := armeabi
-TARGET_CPU_VARIANT := generic
-TARGET_CPU_VARIANT_RUNTIME := generic
-
+#TARGET_ARCH := arm
+#TARGET_ARCH_VARIANT := armv7-a-neon
+#TARGET_CPU_ABI := armeabi-v7a
+#TARGET_CPU_ABI2 := armeabi
+#TARGET_CPU_VARIANT := generic
+#TARGET_CPU_VARIANT_RUNTIME := cortex-a53
 TARGET_CPU_SMP := true
+TARGET_USES_64_BIT_BINDER := true
+#TARGET_SUPPORTS_32_BIT_APPS := true
+
 #ARCH_ARM_HAVE_TLS_REGISTER := true
 
 # Enable CPUSets
 ENABLE_CPUSETS := true
 ENABLE_SCHEDBOOST := true
-
-# FOCKING BINDER
-TARGET_USES_64_BIT_BINDER := true
-TARGET_SUPPORTS_32_BIT_APPS := true
 
 # APEX
 OVERRIDE_TARGET_FLATTEN_APEX := true
@@ -55,9 +56,13 @@ OVERRIDE_TARGET_FLATTEN_APEX := true
 # Bootloader
 TARGET_BOOTLOADER_BOARD_NAME := sl8541e_cus_32b
 TARGET_NO_BOOTLOADER := true
+#TARGET_USES_UEFI := true
 
 # Assert
 TARGET_OTA_ASSERT_DEVICE := sl8541e_cus_32b
+# Platform
+TARGET_BOARD_PLATFORM := sc9832e
+TARGET_BOARD_PLATFORM_GPU := mali-midgard
 
 # Kernel armv7l
 #TARGET_KERNEL_ARCH := armv7l
@@ -66,7 +71,7 @@ BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_CMDLINE := console=ttyS1,115200n8
 BOARD_KERNEL_CMDLINE += lcd_id=ID770703 lcd_base=99aee000 lcd_size=1280x320
 BOARD_KERNEL_CMDLINE += androidboot.selinux=permissive
-#BOARD_KERNEL_CMDLINE += androidboot.configfs=true
+BOARD_KERNEL_CMDLINE += androidboot.configfs=true
 BOARD_KERNEL_CMDLINE += androidboot.hardware=sl8541e_cus_go
 BOARD_KERNEL_CMDLINE += loop.max_part=7
 BOARD_KERNEL_PAGESIZE := 2048
@@ -102,34 +107,30 @@ BOARD_USERDATAIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_CACHEIMAGE_FILE_SYSTEM_TYPE := ext4
 #BOARD_CACHEIMAGE_PARTITION_SIZE := 157286400
 #BOARD_PERSISTIMAGE_PARTITION_SIZE := 2097152
+#BOARD_PRODUCTIMAGE_FILE_SYSTEM_TYPE := ext4
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 #BOARD_VENDORIMAGE_PARTITION_SIZE := 314572800
-
-BOARD_HAS_LARGE_FILESYSTEM := true
-BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 
 BOARD_BUILD_SYSTEM_ROOT_IMAGE := false
 
 # Workaround for error copying vendor files to recovery ramdisk
 TARGET_COPY_OUT_VENDOR := vendor
+#TARGET_COPY_OUT_PRODUCT := product
 
-# Platform
-TARGET_BOARD_PLATFORM := sc9832e
-TARGET_BOARD_PLATFORM_GPU := mali-midgard
-
-# MTP
-TW_HAS_MTP := true
-TW_MTP_DEVICE := /dev/mtp_usb
+BOARD_HAS_LARGE_FILESYSTEM := true
+BOARD_PROPERTY_OVERRIDES_SPLIT_ENABLED := true
 
 BOARD_HAS_NO_SELECT_BUTTON := true
-BOARD_SUPPRESS_SECURE_ERASE := true
-BOARD_USES_SPRD_HARDWARE := true
+#BOARD_SUPPRESS_SECURE_ERASE := true
+#BOARD_USES_SPRD_HARDWARE := true
 
 #!!! Security patch level ORIG !!!
-VENDOR_SECURITY_PATCH := 2018-09-05
+#VENDOR_SECURITY_PATCH := 2018-09-05
 
 #!!! Security patch level TWRPDGEN !!!
 #VENDOR_SECURITY_PATCH := 2021-08-01
+
+#VENDOR_SECURITY_PATCH := 2025-12-31
 
 # Android Verified Boot
 BOARD_AVB_ENABLE := true
@@ -139,38 +140,42 @@ BOARD_AVB_RECOVERY_KEY_PATH := $(BOARD_AVB_KEY_PATH)
 BOARD_AVB_ALGORITHM := SHA256_RSA4096
 BOARD_AVB_RECOVERY_ALGORITHM := $(BOARD_AVB_ALGORITHM)
 BOARD_AVB_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
-BOARD_AVB_RECOVERY_ROLLBACK_INDEX := $(BOARD_AVB_ROLLBACK_INDEX)
+BOARD_AVB_RECOVERY_ROLLBACK_INDEX := 1
+#$(BOARD_AVB_ROLLBACK_INDEX)
 BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 2
+
+# Hack: prevent anti rollback
+PLATFORM_SECURITY_PATCH := 2099-12-31
+VENDOR_SECURITY_PATCH := 2099-12-31
+PLATFORM_VERSION := 99.87.36
+PLATFORM_VERSION_LAST_STABLE := $(PLATFORM_VERSION)
 
 # Hack: prevent anti rollback
 #PLATFORM_SECURITY_PATCH := 2099-12-31
 #VENDOR_SECURITY_PATCH := 2099-12-31
 #PLATFORM_VERSION := 16.1.0
-PLATFORM_VERSION := 8.1.0
-PLATFORM_SECURITY_PATCH := 2018-09-05
+#PLATFORM_VERSION := 8.1.0
+#PLATFORM_SECURITY_PATCH := 2018-09-05
 
 BOARD_ROOT_EXTRA_FOLDERS += system
 BOARD_ROOT_EXTRA_FOLDERS += productinfo
-TARGET_COPY_OUT_PRODUCT := product
 #BOARD_USES_RECOVERY_AS_BOOT := true
 #TARGET_NO_RECOVERY := true
 
 # Treble
-PRODUCT_FULL_TREBLE_OVERRIDE := true
+#PRODUCT_FULL_TREBLE_OVERRIDE := true
 
 # Crypto
-TW_INCLUDE_CRYPTO := true
-TW_CRYPTO_USE_SYSTEM_VOLD :=  gatekeeperd tsupplicant vdc hwservicemanager servicemanager vndservicemanager storagensproxyd zygote32 keystore
+#TW_INCLUDE_CRYPTO := true
+#TW_CRYPTO_USE_SYSTEM_VOLD :=  true
 # qseecomd keymaster-3-0-qti
 #TW_CRYPTO_SYSTEM_VOLD_MOUNT := vendor
-TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
+#TW_CRYPTO_SYSTEM_VOLD_DEBUG := true
 #
-TW_INCLUDE_CRYPTO_FBE := true
-TW_INCLUDE_FBE_METADATA_DECRYPT := true
-BOARD_USES_METADATA_PARTITION := true
+#TW_INCLUDE_CRYPTO_FBE := true
+#TW_INCLUDE_FBE_METADATA_DECRYPT := true
+#BOARD_USES_METADATA_PARTITION := true
 #TW_USE_FSCRYPT_POLICY := 2
-# Test sdcard decrypt
-#TW_PREPARE_DATA_MEDIA_EARLY := true
 
 # Encryption by Depesh
 #TARGET_HW_DISK_ENCRYPTION := true
@@ -183,16 +188,22 @@ BOARD_USES_METADATA_PARTITION := true
 # Recovery
 TARGET_USERIMAGES_USE_EXT4 := true
 TARGET_USERIMAGES_USE_F2FS := true
-BOARD_HAS_NO_REAL_SDCARD := true
-RECOVERY_SDCARD_ON_DATA := true
 # Use mke2fs to create ext4 images
 TARGET_USES_MKE2FS := true
-#TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/etc/recovery.fstab
-TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/fstab.sl8541e_cus_go
-TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/etc/init.rc
+#TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
+#TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery/root/fstab.sl8541e_cus_go
+TARGET_RECOVERY_INITRC := $(DEVICE_PATH)/recovery/root/init.rc
+TARGET_RECOVERY_LCD_BACKLIGHT_PATH := \"/sys/devices/platform/sprd_backlight/backlight/sprd_backlight/brightness\"
 # system.prop
 TARGET_SYSTEM_PROP := $(DEVICE_PATH)/system.prop
+TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.gs6/lun.%d/file
 #RECOVERY_VARIANT := twrp
+
+BOARD_HAS_NO_REAL_SDCARD := true
+RECOVERY_SDCARD_ON_DATA := true
+
+# !!!Test sdcard decrypt!!!
+#TW_PREPARE_DATA_MEDIA_EARLY := true
 
 # Display
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
@@ -206,20 +217,19 @@ TARGET_SCREEN_DENSITY := 128
 RECOVERY_TOUCHSCREEN_SWAP_XY:= true
 # This option flips the value of touch x-axis
 RECOVERY_TOUCHSCREEN_FLIP_X:= true
-
 # Resolution
 TARGET_SCREEN_WIDTH := 1080
 TARGET_SCREEN_HEIGHT := 2000
-
-# TWRP Configuration
-# TWRP specific build flags by Depesh
-TARGET_USE_CUSTOM_LUN_FILE_PATH := /config/usb_gadget/g1/functions/mass_storage.gs6/lun.%d/file
 TW_BRIGHTNESS_PATH := "/sys/devices/platform/sprd_backlight/backlight/sprd_backlight/brightness"
-TARGET_RECOVERY_LCD_BACKLIGHT_PATH := \"/sys/devices/platform/sprd_backlight/backlight/sprd_backlight/brightness\"
-#TW_CUSTOM_CPU_TEMP_PATH := /sys/devices/virtual/thermal/thermal_zone0/temp
 TW_MAX_BRIGHTNESS := 125
 TW_DEFAULT_BRIGHTNESS := 95
-TW_THEME := portrait_hdpi
+
+# TWRP Configuration
+# MTP
+TW_HAS_MTP := true
+TW_MTP_DEVICE := /dev/mtp_usb
+#TW_CUSTOM_CPU_TEMP_PATH := /sys/devices/virtual/thermal/thermal_zone0/temp
+#TW_THEME := portrait_hdpi
 TW_EXTRA_LANGUAGES := false
 TW_DEFAULT_LANGUAGE := ru
 TW_EXCLUDE_APEX := true
@@ -229,7 +239,7 @@ TW_NO_LEGACY_PROPS := true
 TW_USE_TOOLBOX := true
 HAVE_SELINUX := false
 # system won't be unmounted,
-#TW_NEVER_UNMOUNT_SYSTEM := true
+TW_NEVER_UNMOUNT_SYSTEM := true
 TW_NO_SCREEN_BLANK := false
 TW_USE_MODEL_HARDWARE_ID_FOR_DEVICE_ID := true
 #TW_INCLUDE_FASTBOOTD := true
@@ -243,20 +253,20 @@ TW_CUSTOM_POWER_BUTTON := 116
 #TARGET_RECOVERY_DEVICE_MODULES += vndservicemanager
 #TARGET_RECOVERY_DEVICE_MODULES += rpmbserver
 #TARGET_RECOVERY_DEVICE_MODULES += storageproxyd
-TARGET_RECOVERY_DEVICE_MODULES += debuggerd
-RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/debuggerd
-TARGET_RECOVERY_DEVICE_MODULES += strace
-RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/strace
+#TARGET_RECOVERY_DEVICE_MODULES += debuggerd
+#RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/debuggerd
+#TARGET_RECOVERY_DEVICE_MODULES += strace
+#RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/strace
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/system/usr/share/zoneinfo/tzdata
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/hw/android.hardware.gatekeeper@1.0-service
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/hw/android.hardware.keymaster@3.0-service
 #TW_RECOVERY_ADDITIONAL_RELINK_FILES += $(TARGET_OUT)/vendor/bin/vndservicemanager
 #TW_NO_HAPTICS := true
-TW_USE_LEDS_HAPTICS := true
+#TW_USE_LEDS_HAPTICS := true
 TW_LOAD_VENDOR_FIRMWARE := "/vendor/firmware/sf_trusty.elf"
 
 # Libresetprop & resetprop
-TW_INCLUDE_LIBRESETPROP := true
+#TW_INCLUDE_LIBRESETPROP := true
 TW_INCLUDE_RESETPROP := true
 TW_INCLUDE_REPACKTOOLS := true
 
@@ -268,11 +278,11 @@ TW_EXTERNAL_STORAGE_MOUNT_POINT := "external_sd"
 TW_INTERNAL_STORAGE_PATH := "/data/media"
 TW_INTERNAL_STORAGE_MOUNT_POINT := "data"
 # Fuse
-TW_INCLUDE_NTFS_3G    := true
+#TW_INCLUDE_NTFS_3G    := true
 # exFAT FS Support
 TW_INCLUDE_FUSE_EXFAT := true
 # NTFS Support
-TW_INCLUDE_FUSE_NTFS := true    
+#TW_INCLUDE_FUSE_NTFS := true
 
 # Exludes
 # don't include default init.recovery.usb.rc, provide your own or use needed defines inside init.recovery.$DEVICE.rc

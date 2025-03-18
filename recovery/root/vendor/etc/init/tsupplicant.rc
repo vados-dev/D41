@@ -2,18 +2,22 @@ on factorytest
     setprop sprd.tsupplicant.enabled 1
 
 on property:ro.bootmode=cali
-    start tsupplicant-cali
+    start vendor.tsupplicant-cali
 
 on property:sprd.tsupplicant.enabled=1
-    start tsupplicant
+    start vendor.tsupplicant
 
-service tsupplicant /vendor/bin/tsupplicant firmware
+service vendor.tsupplicant /vendor/bin/tsupplicant firmware
     class core
     user root
     group root system
+    setenv PATH /vendor/bin:/vendor/bin/hw
+    setenv LD_LIBRARY_PATH /vendor/lib:/vendor/lib/hw
     seclabel u:r:recovery:s0
 
-service tsupplicant-cali /vendor/bin/tsupplicant firmware
+service vendor.tsupplicant-cali /vendor/bin/tsupplicant firmware
     class cali
     user root
     group root
+    setenv PATH /vendor/bin:/vendor/bin/hw
+    setenv LD_LIBRARY_PATH /vendor/lib:/vendor/lib/hw

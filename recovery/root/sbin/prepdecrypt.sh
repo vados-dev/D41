@@ -3,6 +3,8 @@
 LOG=/tmp/recovery1.log
 TAG=PREPDEC
 
+exit 1
+
 F_LOG(){
    MSG="$1"
    echo -e "I:$TAG: $(date +%F_%T) - $MSG" >> $LOG
@@ -51,8 +53,6 @@ mkdir -p /system/etc 2>&1 ; \
 mkdir -p /vendor/lib/hw/ 2>&1 ; \
 mkdir /persist-lg 2>&1 ; \ 
 mkdir /firmware 2>&1)"
-
-exit 1
 
 # this relinks (linker) AND copies qseecomd to /sbin
 if [ -f /s/vendor/bin/qseecomd ];then

@@ -11,7 +11,7 @@ PRODUCT_COPY_FILES := \
     frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml
 
 # Split selinux policy
-PRODUCT_FULL_TREBLE_OVERRIDE := true
+#PRODUCT_FULL_TREBLE_OVERRIDE := true
 
 # Support for the O-MR1 devices
 PRODUCT_COPY_FILES += \
@@ -24,13 +24,14 @@ PRODUCT_COPY_FILES += \
 
 # Support addtional O-MR1 vendor interface
 PRODUCT_EXTRA_VNDK_VERSIONS := 27
+PRODUCT_SHIPPING_API_LEVEL := 27
 
 # TODO(b/78308559): includes vr_hwc into GSI before vr_hwc move to vendor
 #PRODUCT_PACKAGES += \
 #    vr_hwc
 
-#PRODUCT_PACKAGES += \
-#    sf_trusty.elf
+PRODUCT_PACKAGES += \
+    sf_trusty.elf
 
 # Enable virtual A/B OTA
 #$(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota.mk)

@@ -1,5 +1,3 @@
-#import /init.recovery.usb.configfs.rc
-import /init.recovery.usb.rc
 import /init.recovery.ram.rc
 import /init.recovery.storage.rc
 
@@ -20,6 +18,7 @@ on early-init
     mkdir /vendor/etc/seccomp_policy 0777 media system
     
 on init
+    start healthd
     # SPRD: add for storage manage @{
     export EMULATED_STORAGE /storage/self/emulated
     export PHYSICAL_STORAGE /storage/sdcard0
@@ -43,7 +42,8 @@ on property:vold.decrypt=trigger_restart_framework
 on fs
     ubiattach 0 ubipac
     # exec /sbin/resize2fs -ef /fstab.${ro.hardware}
-    mount_all /fstab.${ro.hardware}
+    mount_all /sbin/recovery.fstab
+#    mount_all /fstab.${ro.hardware}
 
     #start path_wrapper
     mount pstore pstore /sys/fs/pstore

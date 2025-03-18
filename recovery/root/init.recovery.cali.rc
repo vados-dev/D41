@@ -76,18 +76,113 @@ on property:ro.bootmode=cali
     rm /config/usb_gadget/g1/configs/b.1/f1
     symlink /config/usb_gadget/g1/functions/vser.gs7 /config/usb_gadget/g1/configs/b.1/f1
 
-    ubiattach 0 ubipac
-    mount_all /etc/recovery.fstab
+    mount_all /etc/recovery.tmpfsdata.fstab
+    mount tmpfs tmpfs /data mode=0777
     chown system system /data
     chmod 0771 /data
+    restorecon /data
     mkdir /data/local 0751 root root
     mkdir /data/local/englog 0777 root root
     mkdir /data/local/media 0751 media media
     mkdir /data/local/slogmodem 0770 shell system
-    mkdir /data/misc 01771 system misc
-    mkdir /data/misc/bluedroid 0770 system system
+    mkdir /data/sprd_ss 0770 system system
+    class_start cali
     insmod /lib/modules/mali.ko
-    insmod /lib/modules/trout_fm.ko
+    insmod /system/lib/modules/trout_fm.ko
+    insmod /lib/modules/bcmdhd.ko
+	mkdir /data/gnss/ 0777 system system
+	mkdir /data/gnss/bin/ 0777 system system
+	mkdir /data/gnss/supl/ 0777 system system
+	mkdir /data/gnss/config/ 0777 system system
+	mkdir /data/gnss/lte/ 0777 system system
+	chown system system /data/gnss/bin/gnssmodem.bin
+	chown system system /data/gnss/config/config.xml
+	chown system system /data/gnss/supl/supl.xml
+	chown system system /data/gnss/supl/spirentroot.cer
+	chown system system /data/gnss/lte/ext.eph
+	chown system system /data/gnss/lte/jpleph.405
+	chown system system /data/gnss/lte/raw.obs
+	chown system system /data/gnss/gnss.log
+	chown system system /data/gnss/nmea.log
+	chown system system /productinfo/tsx.dat
+        chown system system /productinfo/txdata.txt
+	chown system system /data/gnss/FlashCfg.cg
+        chown system system /sys/class/misc/gnss_common_ctl/gnss_power_enable
+        chown system system /sys/class/misc/gnss_common_ctl/gnss_dump
+        chown system system /sys/class/misc/gnss_common_ctl/gnss_subsys
+        chown system system /dev/gnss_pmnotify_ctl
+	chmod 666 /data/gnss/bin/gnssmodem.bin
+	chmod 666 /data/gnss/config/config.xml
+	chmod 660 /data/gnss/supl/supl.xml
+	chmod 660 /data/gnss/supl/spirentroot.cer
+	chmod 666 /data/gnss/lte/ext.eph
+	chmod 666 /data/gnss/lte/jpleph.405
+	chmod 660 /data/gnss/lte/raw.obs
+	chmod 666 /data/gnss/gnss.log
+	chmod 666 /data/gnss/nmea.log
+	chmod 666 /productinfo/tsx.dat
+        chmod 666 /productinfo/txdata.txt
+	chmod 666 /data/gnss/FlashCfg.cg
+        chmod  220 /sys/class/misc/gnss_common_ctl/gnss_power_enable
+        chmod 660 /sys/class/misc/gnss_common_ctl/gnss_dump
+        chmod 660 /sys/class/misc/gnss_common_ctl/gnss_subsys
+        chmod 660  /dev/gnss_pmnotify_ctl
+
+    insmod /lib/modules/sprdbt_tty.ko
+    start hwservicemanager
+    start cp_diskserver
+    start slogmodem
+    start vendor.mlogservice
+
+on property:ro.bootmode=factorytest
+    # Enables vser port
+    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "vser"
+    rm /config/usb_gadget/g1/configs/b.1/f1
+    symlink /config/usb_gadget/g1/functions/vser.gs7 /config/usb_gadget/g1/configs/b.1/f1
+
+    mount_all /etc/recovery.tmpfsdata.fstab
+    mount tmpfs tmpfs /data mode=0777
+    trigger post-fs
+    trigger post-fs-data
+    chown system system /data
+    chmod 0771 /data
+    chown system system /dev/adf0
+    chown system system /dev/adf-interface0.0
+    chown system system /dev/adf-overlay-engine0.0
+    mkdir /data/local 0751 root root
+    mkdir /data/local/englog 0777 root root
+    mkdir /data/local/media 0751 media media
+    mkdir /data/misc 01771 system misc
+    mkdir /data/misc/media 0700 media media
+    mkdir /data/misc/audioserver 0700 audioserver audioserver
+    mkdir /data/misc/cameraserver 0700 cameraserver cameraserver
+
+    # Support audio test
+    mkdir /dev/pipe 0755 system system
+    mkdir /data/local/media 0770 audioserver system
+
+    chown audioserver system /proc/agdsp/agdsp
+    chown audioserver system /proc/agdsp/ldinfo
+    chown audioserver system /proc/agdsp/mem
+    chown audioserver system /proc/agdsp/start
+    chown audioserver system /proc/agdsp/status
+    chown audioserver system /proc/agdsp/stop
+    chown audioserver system /proc/agdsp/wdtirq
+    chown audioserver system /dev/block/platform/sdio_emmc/by-name/l_agdsp
+    chown audioserver system /dev/audio_pipe
+    chmod 666   /dev/audio_pipe
+    chmod 666   /dev/audio_dsp_log
+    chmod 666   /dev/audio_dsp_pcm
+    chmod 666   /dev/audio_dsp_mem
+
+    chown  root audio  /dev/audio_dsp_log
+    chown  root audio  /dev/audio_dsp_pcm
+    chown  root audio  /dev/audio_dsp_mem
+
+    insmod /lib/modules/sprdbt_tty.ko
+    insmod /lib/modules/sprd_fm.ko
+    insmod /lib/modules/mali.ko
+    insmod /system/lib/modules/trout_fm.ko
     insmod /lib/modules/bcmdhd.ko
     mkdir /data/gnss/ 0777 system system
     mkdir /data/gnss/bin/ 0777 system system
@@ -112,11 +207,11 @@ on property:ro.bootmode=cali
     chown system system /dev/gnss_pmnotify_ctl
     chmod 666 /data/gnss/bin/gnssmodem.bin
     chmod 666 /data/gnss/config/config.xml
-    chmod 666 /data/gnss/supl/supl.xml
-    chmod 666 /data/gnss/supl/spirentroot.cer
+    chmod 660 /data/gnss/supl/supl.xml
+    chmod 660 /data/gnss/supl/spirentroot.cer
     chmod 666 /data/gnss/lte/ext.eph
     chmod 666 /data/gnss/lte/jpleph.405
-    chmod 666 /data/gnss/lte/raw.obs
+    chmod 660 /data/gnss/lte/raw.obs
     chmod 666 /data/gnss/gnss.log
     chmod 666 /data/gnss/nmea.log
     chmod 666 /productinfo/tsx.dat
@@ -126,66 +221,23 @@ on property:ro.bootmode=cali
     chmod 660 /sys/class/misc/gnss_common_ctl/gnss_dump
     chmod 660 /sys/class/misc/gnss_common_ctl/gnss_subsys
     chmod 660  /dev/gnss_pmnotify_ctl
-
-    chown system system /dev/iio:device1
-    chown system system /sys/bus/iio/devices/trigger0/name
-    chown system system /sys/bus/iio/devices/iio:device1/buffer
-    chown system system /sys/bus/iio/devices/iio:device1/buffer/length
-    chown system system /sys/bus/iio/devices/iio:device1/buffer/enable
-    chown system system /sys/bus/iio/devices/iio:device1/trigger/current_trigger
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/iio/trigger/current_trigger
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/batch
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/logctl
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/calibrator_cmd
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/calibrator_data
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/enable
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/flush
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/iio
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/version
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/op_download
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/mag_cali_flag
-    chown system system /sys/class/sprd_sensorhub/sensor_hub/sensorhub
-
-    chmod 666 /sys/bus/iio/devices/trigger0/name
-    chmod 666 /sys/bus/iio/devices/iio:device1/buffer/length
-    chmod 666 /sys/bus/iio/devices/iio:device1/buffer/enable
-    chmod 666 /sys/bus/iio/devices/iio:device1/trigger/current_trigger
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/iio/trigger/current_trigger
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/batch
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/logctl
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/calibrator_cmd
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/calibrator_data
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/enable
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/flush
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/iio
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/version
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/op_download
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/mag_cali_flag
-    chmod 666 /sys/class/sprd_sensorhub/sensor_hub/sensorhub
-
-    mkdir /productinfo/sensor_calibration_data
-
-    mkdir /data/gnss/ 0777 system system
-    mkdir /data/gnss/bin/ 0777 system system
-    mkdir /data/gnss/supl/ 0777 system system
-    mkdir /data/gnss/config/ 0777 system system
-    mkdir /data/gnss/lte/ 0777 system system
-    chmod 666 /data/gnss/bin/gnssmodem.bin
-    chmod 666 /data/gnss/config/config.xml
-    chmod 666 /data/gnss/supl/supl.xml
-    chmod 666 /data/gnss/supl/spirentroot.cer
-    chmod 666 /data/gnss/lte/ext.eph
-    chmod 666 /data/gnss/lte/jpleph.405
-    chmod 666 /data/gnss/gnss.log
-    chmod 666 /data/gnss/nmea.log
-    chmod 666 /productinfo/tsx.dat
-    chmod 666 /productinfo/txdata.txt
-
-    insmod /lib/modules/sprdbt_tty.ko
-    start hwservicemanager
+    chmod 660 /proc/bluetooth/sleep/btwrite
+	chown bluetooth net_bt_admin /proc/bluetooth/sleep/btwrite
+	chmod 660 /sys/class/rfkill/rfkill0/state
+	chown bluetooth net_bt_admin /sys/class/rfkill/rfkill0/state
+	chmod 660 /sys/class/rfkill/rfkill0/type
+    chown bluetooth net_bt_admin /sys/class/rfkill/rfkill0/type
+    mkdir /data/misc 01771 system misc
+    mkdir /data/misc/wifi 0770 wifi wifi
+    write /data/misc/wifi/fwpath sta_mode
+    chmod 660 /data/misc/wifi/fwpath
+    chown wifi wifi /data/misc/wifi/fwpath
+    mkdir /data/ylog 0777
+    trigger adb_enable
     start cp_diskserver
     start slogmodem
-    start vendor.mlogservice
+    trigger factorytest
+
 
 on cali
     mkdir /cache/ylog 0777
@@ -224,7 +276,12 @@ on factorytest
     chmod 666 /productinfo/tsx.dat
     chmod 666 /productinfo/txdata.txt
 
+on property:ro.bootmode=factorytest && property:ro.debuggable=0
+    write /config/usb_gadget/g1/UDC ${sys.usb.controller}
 
+on cali
+    mkdir /cache/ylog 0777
+    start ylog_force_startup
 
 on property:ro.bootmode=cali
     mkdir /cache/ylog 0777

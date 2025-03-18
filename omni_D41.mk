@@ -8,14 +8,19 @@
 PRODUCT_RELEASE_NAME := Eplutus D41
 
 # Inherit from those products. Most specific first.
-#$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
+$(call inherit-product, device/sprd/D41/go_defaults_common.mk)
+#
+$(call inherit-product, $(SRC_TARGET_DIR)/product/aosp_base.mk)
+
+#$(call inherit-product, $(SRC_TARGET_DIR)/product/base.mk)
 #$(call inherit-product, $(SRC_TARGET_DIR)/product/treble_common.mk)
 #$(call inherit-product, $(SRC_TARGET_DIR)/product/embedded.mk)
 #$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
 #$(call inherit-product-if-exists, $(SRC_TARGET_DIR)/product/languages_full.mk)
 
-$(call inherit-product, device/sprd/D41/go_defaults_common.mk)
+# Installs gsi keys into ramdisk, to boot a developer GSI with verified boot.
+$(call inherit-product-if-exists, $(SRC_TARGET_DIR)/product/gsi_keys.mk)
 
 # Inherit some common Omni stuff.
 #$(call inherit-product, vendor/omni/config/common.mk)
@@ -33,19 +38,33 @@ PRODUCT_BRAND := SPRD
 PRODUCT_MODEL := sl8541e_cus_go
 PRODUCT_MANUFACTURER := sprd
 
+PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
+    persist.service.adb.enable=1 \
+    persist.service.debuggable=1 \
+    ro.adb.secure=0 \
+    ro.treble.enabled=true \
+    ro.vendor.build.security_patch=2025-12-31
+
 PRODUCT_GMS_CLIENTID_BASE := android-sprd
+
+PRODUCT_SYSTEM_PROPERTY_BLACKLIST += \
+    ro.product.device \
+    ro.product.name \
+    ro.build.product
 
 PRODUCT_BUILD_PROP_OVERRIDES += \
     TARGET_DEVICE=sl8541e_cus_go \
-    PRODUCT_NAME=sl8541e_cus_gofu_osea \
+    PRODUCT_NAME=mVados \
     PRIVATE_BUILD_DESC="sp9832e_1h10_native-user 8.1.0 OPM2.171019.012 52215 release-keys"
 
 BUILD_FINGERPRINT := SPRD/sp9832e_1h10_native/sp9832e_1h10:8.1.0/OPM2.171019.012/52215:user/release-keys
-PLATFORM_SECURITY_PATCH := 2018-09-05
-#PLATFORM_SECURITY_PATCH := 2025-12-31
+PLATFORM_SECURITY_PATCH := 2025-12-31
+#PLATFORM_SECURITY_PATCH := 2018-09-05
+
 
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
     ro.secure=1 \
     ro.adb.secure=0 \
-    ro.vendor.build.security_patch=2018-09-05
-#    ro.vendor.build.security_patch=2025-12-31
+    ro.vendor.build.security_patch=2025-12-31
+#    ro.vendor.build.security_patch=2018-09-05
+

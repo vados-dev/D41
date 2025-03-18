@@ -1,24 +1,29 @@
-import /init.recovery.environ.rc
 import /init.recovery.common.rc
+import /init.recovery.usb.rc
 import /init.recovery.cali.rc
-import /vendor/etc/init/zram.rc
 import /init.recovery.zygote32.rc
+import /vendor/etc/init/zram.rc
 import /vendor/etc/init/android.hardware.gatekeeper@1.0-service.rc
 import /vendor/etc/init/android.hardware.keymaster@3.0-service.rc
-#import /vendor/etc/init/rpmbserver_androido.rc
+import /vendor/etc/init/rpmbserver_androido.rc
 import /vendor/etc/init/tsupplicant.rc
 import /vendor/etc/init/storageproxyd_androidone.rc
 import /vendor/etc/init/vndservicemanager.rc
 
 #on property:sys.usb.config=fastboot
-#    start servicemanager
-#    start hwservicemanager
+#    start system.servicemanager
+#    start system.hwservicemanager
 #    restart fastbootd
 
-on property:sprd.tsupplicant.enabled=1
-    start tsupplicant
+# SPRD: add adb in recovery @{
+on adb_enable
+    setprop sys.usb.config adb,vser,gser
+# @}
 
-service gatekeeperd /system/bin/gatekeeperd /data/misc/gatekeeper
+on property:sprd.tsupplicant.enabled=1
+    start vendor.tsupplicant
+
+service system.gatekeeperd /system/bin/gatekeeperd /data/misc/gatekeeper
     class late_start
     user root
     setenv PATH /system/bin
@@ -34,7 +39,7 @@ service keystore_auth /sbin/keystore_auth
     seclabel u:r:recovery:s0
 
 # keystore is started and stopped on demand by TWRP
-service keystore /system/bin/keystore /data/misc/keystore
+service system.keystore /system/bin/keystore /data/misc/keystore
     user root
     group keystore drmrpc readproc root system
     setenv PATH /system/bin
@@ -42,7 +47,7 @@ service keystore /system/bin/keystore /data/misc/keystore
     disabled
     seclabel u:r:recovery:s0
 
-service hwservicemanager /system/bin/hwservicemanager
+service system.hwservicemanager /system/bin/hwservicemanager
     user root
     setenv PATH /system/bin
     setenv LD_LIBRARY_PATH /system/lib
@@ -54,7 +59,7 @@ service hwservicemanager /system/bin/hwservicemanager
     shutdown critical
     seclabel u:r:recovery:s0
 
-service servicemanager /system/bin/servicemanager
+service system.servicemanager /system/bin/servicemanager
     class core animation
     user root
     group root system readproc
@@ -80,15 +85,15 @@ service wait_for_keymaster /sbin/wait_for_keymaster
     oneshot
     seclabel u:r:recovery:s0
 
-service vold /system/bin/vold \
+service system.vold /system/bin/vold \
         --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \
         --fsck_context=u:r:fsck:s0 --fsck_untrusted_context=u:r:fsck_untrusted:s0
     socket vold stream 0660 root mount
     socket cryptd stream 0660 root mount
-    ioprio be 2
+#    ioprio be 2
 #    writepid /dev/cpuset/foreground/tasks
     setenv PATH /system/bin
-    setenv LD_LIBRARY_PATH /system/lib
+    setenv LD_LIBRARY_PATH /system/lib64:/system/lib
     disabled
     shutdown critical
     seclabel u:r:recovery:s0
@@ -105,14 +110,14 @@ service vold /system/bin/vold \
 
 # One shot invocation to deal with encrypted volume.
 on defaultcrypto
-    exec - root -- /sbin/vdc --wait cryptfs mountdefaultencrypted
+    exec - root -- /system/bin/vdc --wait cryptfs mountdefaultencrypted
     # vold will set vold.decrypt to trigger_restart_framework (default
     # encryption) or trigger_restart_min_framework (other encryption)
 
 # One shot invocation to encrypt unencrypted volumes
 on encrypt
     onrestart restart zygote
-    exec - root -- /sbin/vdc --wait cryptfs enablecrypto inplace default noui
+    exec - root -- /system/bin/vdc --wait cryptfs enablecrypto inplace default noui
     # vold will set vold.decrypt to trigger_restart_framework (default
     # encryption)
 
@@ -134,12 +139,31 @@ service prepdecrypt /sbin/prepdecrypt.sh
     user root
     seclabel u:r:recovery:s0
 
-on init
-    # decrypt stuff (triggers crypto.ready)
-    start prepdecrypt
+on property:ro.bootmode=recovery
+    class_start recovery
 
-on fs
+#on property:ro.bootmode=recovery
+    # Enables vser port
+#    write /config/usb_gadget/g1/configs/b.1/strings/0x409/configuration "vser"
+#    rm /config/usb_gadget/g1/configs/b.1/f1
+#    symlink /config/usb_gadget/g1/functions/vser.gs7 /config/usb_gadget/g1/configs/b.1/f1
+#    mount_all /etc/recovery.tmpfsdata.fstab
+
+on property:ro.crypto.state=encrypted && property:ro.crypto.type=file
     install_keyring
+
+#on early-fs
+#    start vold
+
+on init
+    trigger adb_enable
+#    setprop sys.usb.config adb
+    mount_all /etc/recovery.tmpfsdata.fstab
+    # decrypt stuff (triggers crypto.ready)
+#    start prepdecrypt
+
+#on fs
+#    install_keyring
 
 on post-fs
     start modulesdriver
@@ -212,14 +236,14 @@ on post-fs-data
 
 #modify permission for qc_gpio
     chmod 666 /dev/qc_gpio
-    
+
 #modify permission for ttyS1
-    chmod 777 /dev/ttyS1	
-    
+    chmod 777 /dev/ttyS1
+
     chmod 666 /sys/class/backlight/sprd_backlight/brightness
     chmod 666 /sys/class/backlight/sprd_backlight/bl_power
 
-on boot   
+on boot
 # block I/O vm.dirty parameters
     write /proc/sys/vm/dirty_background_bytes 4194304
     write /proc/sys/vm/dirty_bytes  52428800

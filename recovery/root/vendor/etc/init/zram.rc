@@ -1,4 +1,6 @@
-service ven_zram /vendor/bin/zram.sh
+service vendor.zram /vendor/bin/zram.sh
     disabled
     oneshot
+    setenv PATH /vendor/bin:/vendor/bin/hw
+    setenv LD_LIBRARY_PATH /vendor/lib:/vendor/lib/hw
     seclabel u:r:recovery:s0

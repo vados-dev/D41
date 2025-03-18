@@ -1,9 +1,11 @@
-firmware_directories /sys/ /sys/firmware/ /proc/device-tree/firmware/ /vendor/firmware/ /firmware/image/ /etc/firmware/ /odm/firmware/
-uevent_socket_rcvbuf_size 16M
+#firmware_directories /vendor/firmware/ /sys/ /sys/firmware/ /proc/device-tree/firmware/ /firmware/ /firmware/image/ /etc/firmware/ /odm/firmware/
+#uevent_socket_rcvbuf_size 16M
 
 /dev/sttygnss0          0660     system      system
 /dev/spipe_gnss0        0660     system      system
 /dev/spipe_gnss1        0660     system      system
+/dev/stime_pm           0660     system      system
+/dev/stime_ch           0660     system      system
 
 /dev/slog_gnss          0660     system      system
 /dev/slog_wcn           0660     system      system
@@ -41,8 +43,8 @@ uevent_socket_rcvbuf_size 16M
 /dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/gpsbd       0660     system      root
 
 /dev/block/mmcblk1p*    0660     system      system
-/dev/AKM099XX           0660     system      system
 /dev/block/mmcblk0rpmb  0660     system      system
+/dev/AKM099XX           0660     system      system
 
 /dev/vser               0660     system      system
 /dev/ttyGS*             0666     system      system
@@ -61,7 +63,7 @@ uevent_socket_rcvbuf_size 16M
 /dev/sprd_isp           0660     system      camera
 /dev/sprd_sensor        0660     system      camera
 /dev/sprd_cpp           0660     system      camera
-/dev/video0        	0666     media       media
+/dev/video0             0666     media       media
 /dev/map_user           0660     system      system
 
 /sys/devices/system/cpu/cpu* /cpufreq/interactive/boost 0660 media system
@@ -75,9 +77,17 @@ uevent_socket_rcvbuf_size 16M
 /sys/devices/system/cpu/cpu* /cpufreq/interactive/min_sample_time 0660 system system
 /sys/devices/system/cpu/cpu* /cpufreq/interactive/io_is_busy 0660 system system
 
+/dev/input/event*       0660     system      input
+/sys/devices/virtual/input/input*   acc_enable      0660  system   input
+/sys/devices/virtual/input/input*   acc_delay      0660  system   input
+/sys/devices/virtual/input/input*   gyro_enable      0660  system   input
+/sys/devices/virtual/input/input*   gyro_delay      0660  system   input
 /sys/devices/virtual/input/input*   enable      0660  system   input
 /sys/devices/virtual/input/input*   delay      0660  system   input
 /sys/devices/virtual/input/input*   chip_info      0660  system   input
+/sys/class/input/input*   enable      0660  system   input
+/sys/class/input/input*   delay      0660  system   input
+/sys/class/input/input*   chip_info      0660  system   input
 
 /sys/devices/platform/soc/soc:ap-apb/70700000.i2c/i2c-2/2-006a/input/input* /accel/enable      0660  system   input
 /sys/devices/platform/soc/soc:ap-apb/70700000.i2c/i2c-2/2-006a/input/input* /accel/polling_rate      0660  system   input

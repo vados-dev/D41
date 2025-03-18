@@ -1,3 +1,12 @@
+<!--
+    Input:
+        manifest.xml
+        manifest_boot.xml
+        manifest_typec.xml
+        manifest_gnss.xml
+        manifest_network.xml
+        manifest.xml
+-->
 <manifest version="1.0" type="device" target-level="2">
     <hal format="hidl">
         <name>android.hardware.audio</name>
@@ -361,6 +370,5 @@
     </hal>
     <sepolicy>
         <version>27.0</version>
-        <version>28.0</version>
     </sepolicy>
 </manifest>
